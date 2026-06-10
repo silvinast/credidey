@@ -1,0 +1,2683 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CrediDey — Gestión de Préstamos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#f0f4f8;--surface:#fff;--border:#e2e8f0;
+  --accent:#1e3a5f;--accent2:#2d5986;--gold:#F59E0B;--gold-light:#fef3c7;
+  --text:#0f172a;--muted:#64748b;--dim:#f1f5f9;
+  --green:#16a34a;--red:#dc2626;--yellow:#ca8a04;--orange:#ea580c;--cyan:#0891b2;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;}
+::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px;}
+
+#nav{background:linear-gradient(135deg,#1e3a5f,#2d5986);display:flex;align-items:center;padding:0 16px;height:56px;gap:2px;position:sticky;top:0;z-index:100;overflow-x:auto;box-shadow:0 2px 12px rgba(30,58,95,.3);}
+#nav::-webkit-scrollbar{height:0;}
+.brand{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:#fff;margin-right:12px;white-space:nowrap;letter-spacing:-0.5px;}
+.brand span{color:#F59E0B;}
+.nb{padding:6px 12px;border-radius:7px;cursor:pointer;font-size:11px;font-family:'DM Mono',monospace;color:#93c5fd;border:none;background:none;white-space:nowrap;}
+.nb:hover{background:rgba(255,255,255,.1);color:#fff;}
+.nb.on{background:rgba(255,255,255,.15);color:#fff;font-weight:700;border:1px solid rgba(245,158,11,.4);}
+
+#content{padding:16px;max-width:1100px;margin:0 auto;}
+
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px;box-shadow:0 1px 4px rgba(30,58,95,.06);}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;color:var(--accent);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr;}}
+
+.stat{background:#fff;border:1px solid var(--border);border-radius:10px;padding:13px;border-left:3px solid var(--gold);}
+.st-l{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;}
+.st-v{font-family:'Syne',sans-serif;font-weight:800;font-size:19px;line-height:1.1;color:var(--accent);}
+
+.twrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;background:#fff;}
+th{text-align:left;font-family:'DM Mono',monospace;font-size:9px;color:#fff;text-transform:uppercase;padding:8px 11px;border-bottom:1px solid var(--border);background:var(--accent);white-space:nowrap;}
+td{padding:9px 11px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f8fafc;}
+.mono{font-family:'DM Mono',monospace;font-size:11px;}
+
+.field{display:flex;flex-direction:column;gap:4px;margin-bottom:11px;}
+.field label{font-family:'DM Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+input,select,textarea{background:var(--dim);border:1px solid var(--border);border-radius:7px;padding:8px 10px;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;width:100%;transition:border-color .15s;}
+input:focus,select:focus{border-color:var(--accent);background:#fff;}
+
+.btn{padding:7px 14px;border-radius:8px;cursor:pointer;font-size:12px;font-family:'DM Sans',sans-serif;font-weight:500;border:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px;}
+.btn:hover{opacity:.85;}
+.btn-p{background:var(--accent);color:#fff;}
+.btn-s{background:var(--dim);color:var(--muted);border:1px solid var(--border);}
+.btn-g{background:#dcfce7;color:var(--green);border:1px solid #86efac;}
+.btn-r{background:#fee2e2;color:var(--red);border:1px solid #fca5a5;}
+.btn-y{background:var(--gold-light);color:#92400e;border:1px solid #fde68a;}
+.btn-w{background:#25D366;color:#fff;}
+.btn-sm{padding:3px 9px;font-size:11px;}
+
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:4px;font-size:10px;font-family:'DM Mono',monospace;white-space:nowrap;}
+
+.moverlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:14px;}
+.moverlay.open{display:flex;}
+.mbox{background:#fff;border-radius:14px;padding:22px;width:100%;max-width:540px;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.mhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;border-bottom:2px solid var(--gold);padding-bottom:12px;}
+.mtitle{font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--accent);}
+.mclose{background:none;border:none;font-size:22px;cursor:pointer;color:var(--muted);}
+
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:6px;}
+.cal-h{text-align:center;font-size:9px;font-family:'DM Mono',monospace;color:var(--muted);padding:2px;}
+.cal-d{border-radius:5px;padding:4px 2px;text-align:center;font-size:9px;font-family:'DM Mono',monospace;border:1px solid transparent;}
+.cal-d.dom{background:#f8fafc;color:#cbd5e1;}
+.cal-d.ok{background:#dcfce7;color:#15803d;border-color:#86efac;}
+.cal-d.parcial{background:#fef9c3;color:#854d0e;border-color:#fde047;}
+.cal-d.mal{background:#fee2e2;color:#b91c1c;border-color:#fca5a5;}
+.cal-d.futuro{background:#f8fafc;color:#94a3b8;}
+.cal-d.hoy{border-color:var(--gold)!important;font-weight:700;}
+
+.prog{height:5px;background:var(--dim);border-radius:4px;overflow:hidden;margin-top:4px;}
+.prog-f{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:4px;}
+
+.sep{height:1px;background:var(--border);margin:12px 0;}
+.empty{text-align:center;padding:28px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;}
+.loading{display:flex;align-items:center;justify-content:center;padding:40px;gap:10px;color:var(--muted);font-family:'DM Mono',monospace;font-size:11px;}
+.spin{width:16px;height:16px;border:2px solid #e2e8f0;border-top-color:var(--gold);border-radius:50%;animation:sp .7s linear infinite;flex-shrink:0;}
+@keyframes sp{to{transform:rotate(360deg)}}
+.alert-b{background:#eff6ff;color:var(--accent);border:1px solid #bfdbfe;border-radius:8px;padding:10px 12px;font-size:12px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+<div id="splash" style="position:fixed;inset:0;background:linear-gradient(135deg,#1e3a5f,#2d5986);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;">
+  <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:48px;color:#fff;letter-spacing:-2px;">Credi<span style="color:#F59E0B;">Dey</span></div>
+  <div style="font-family:'DM Mono',monospace;font-size:11px;color:#93c5fd;letter-spacing:4px;text-transform:uppercase;">Gestión de Préstamos</div>
+  <div style="width:40px;height:3px;background:#F59E0B;border-radius:2px;margin-top:8px;animation:grow .8s ease forwards;"></div>
+  <div style="font-family:'DM Sans',sans-serif;font-size:12px;color:#64748b;margin-top:24px;">Cargando...</div>
+</div>
+<style>@keyframes grow{from{width:0}to{width:40px}}</style>
+
+<div id="nav">
+  <div class="brand">Credi<span>Dey</span></div>
+  <button class="nb on"  onclick="pg('dashboard',this)">◈ Inicio</button>
+  <button class="nb"     onclick="pg('cobradores',this)">👥 Cobradores</button>
+  <button class="nb"     onclick="pg('clientes',this)">🏠 Clientes</button>
+  <button class="nb"     onclick="pg('cobros',this)">💰 Cobros</button>
+  <button class="nb"     onclick="pg('semana',this)">📊 Semana</button>
+  <button class="nb"     onclick="pg('archivo',this)">📁 Archivo</button>
+  <button class="nb"     onclick="pg('aprobaciones',this)">✅ Aprobaciones</button>
+  <button class="nb"     onclick="pg('gastos',this)">💸 Gastos</button>
+  <button class="nb"     onclick="pg('analisis',this)">📈 Análisis</button>
+  <button class="nb"     onclick="pg('contrato',this)">📄 Contrato</button>
+</div>
+
+<div id="content"><div class="loading"><div class="spin"></div>Cargando...</div></div>
+
+<div class="moverlay" id="modal" onclick="closeMIf(event)">
+  <div class="mbox">
+    <div class="mhead"><div class="mtitle" id="mtitle"></div><button class="mclose" onclick="closeM()">×</button></div>
+    <div id="mbody"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+// SUPABASE CONFIG
+// ══════════════════════════════════════════════
+const SB = 'https://tfjdafgjrgahubjwddxe.supabase.co';
+const SK = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRmamRhZmdqcmdhaHViandkZHhlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4MTUzODAsImV4cCI6MjA5NjM5MTM4MH0.jofWhNl8U70L73EAQ4MvcUmIIm1lvsxsEIeLZHhpmR8';
+
+async function db(table, method='GET', body=null, query=''){
+  const h={'Content-Type':'application/json','apikey':SK,'Authorization':'Bearer '+SK,'Prefer':method==='POST'?'return=representation':''};
+  const r=await fetch(`${SB}/rest/v1/${table}${query}`,{method,headers:h,body:body?JSON.stringify(body):null});
+  if(!r.ok){const e=await r.text();throw new Error(e);}
+  const t=await r.text();return t?JSON.parse(t):[];
+}
+const GET  =(t,q='')   =>db(t,'GET',null,q);
+const POST =(t,b)      =>db(t,'POST',b);
+const PATCH=(t,q,b)    =>db(t,'PATCH',b,q);
+const DEL  =(t,q)      =>db(t,'DELETE',null,q);
+
+// ══════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════
+const fmt=n=>new Intl.NumberFormat('es-AR',{style:'currency',currency:'ARS',maximumFractionDigits:0}).format(n||0);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmtD=d=>d?new Date(d+'T12:00:00').toLocaleDateString('es-AR'):'—';
+
+function calcPlan(monto,plan){
+  const rec=plan==='20'?.25:.40;
+  const total=Math.round(monto*(1+rec));
+  const cuotas=parseInt(plan);
+  return{total,cuotas,cuota:Math.round(total/cuotas),ganancia:Math.round(monto*rec)};
+}
+
+function diasHabiles(desde,n){
+  const dias=[];const d=new Date(desde+'T12:00:00');
+  while(dias.length<n){if(d.getDay()!==0)dias.push(d.toISOString().slice(0,10));d.setDate(d.getDate()+1);}
+  return dias;
+}
+
+function lunesSemana(){
+  const d=new Date();const dia=d.getDay();
+  d.setDate(d.getDate()-(dia===0?6:dia-1));
+  return d.toISOString().slice(0,10);
+}
+
+function badge(label,color){return`<span class="badge" style="background:${color}22;color:${color};border:1px solid ${color}44">${label}</span>`;}
+
+function uid(){
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,function(c){
+    var r=Math.random()*16|0,v=c=='x'?r:(r&0x3|0x8);
+    return v.toString(16);
+  });
+}
+
+// Modal
+function openM(title,html){document.getElementById('mtitle').textContent=title;document.getElementById('mbody').innerHTML=html;document.getElementById('modal').classList.add('open');}
+function closeM(){document.getElementById('modal').classList.remove('open');}
+function closeMIf(e){if(e.target===document.getElementById('modal'))closeM();}
+
+// Nav
+function pg(page,el){
+  document.querySelectorAll('.nb').forEach(x=>x.classList.remove('on'));
+  if(el)el.classList.add('on');
+  document.getElementById('content').innerHTML='<div class="loading"><div class="spin"></div>Cargando...</div>';
+  PAGES[page]&&PAGES[page]();
+}
+
+const PAGES={};
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+PAGES.dashboard=async function(){
+  try{
+    const[prest,pagos,clis,cobs]=await Promise.all([
+      GET('prestamos','?select=id,monto,total,cuota,cuotas,estado,fecha_inicio,cliente_id'),
+      GET('pagos','?select=prestamo_id,importe,fecha,tipo'),
+      GET('clientes','?select=id,nombre,tel,cobrador_id'),
+      GET('cobradores','?select=id,numero,nombre,tel'),
+    ]);
+    const hoy=today();
+    const act=prest.filter(p=>p.estado==='Activo');
+    const cobHoy=pagos.filter(p=>p.fecha===hoy).reduce((a,p)=>a+p.importe,0);
+    const saldo=act.reduce((a,p)=>{
+      const ab=pagos.filter(x=>x.prestamo_id===p.id).reduce((s,x)=>s+x.importe,0);
+      return a+Math.max(0,p.total-ab);
+    },0);
+    // cuotas vencidas
+    let venc=0;
+    act.forEach(p=>{
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const pas=dias.filter(d=>d<hoy).length;
+      const ab=pagos.filter(x=>x.prestamo_id===p.id).reduce((s,x)=>s+x.importe,0);
+      const deb=pas*p.cuota;
+      if(ab<deb)venc++;
+    });
+
+    document.getElementById('content').innerHTML=`
+    <div class="g4" style="margin-bottom:14px">
+      <div class="stat"><div class="st-l">Préstamos activos</div><div class="st-v" style="color:var(--accent)">${act.length}</div></div>
+      <div class="stat"><div class="st-l">Cobrado hoy</div><div class="st-v" style="color:var(--green)">${fmt(cobHoy)}</div></div>
+      <div class="stat"><div class="st-l">Con atraso</div><div class="st-v" style="color:var(--red)">${venc}</div></div>
+      <div class="stat"><div class="st-l">Clientes</div><div class="st-v" style="color:var(--cyan)">${clis.length}</div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">Acciones rápidas</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="pg('cobros',document.querySelector('.nb:nth-child(5)'))">💰 Cobros de hoy</button>
+        <button class="btn btn-s" onclick="pg('clientes',document.querySelector('.nb:nth-child(4)'))">+ Nuevo cliente</button>
+        <button class="btn btn-s" onclick="pg('semana',document.querySelector('.nb:nth-child(6)'))">📊 Resumen semana</button>
+        <button class="btn btn-s" onclick="exportarExcel()">📥 Backup</button>
+      </div>
+    </div>
+    <div id="panel-mora"></div>`;
+
+    // Cargar panel de mora
+    cargarMora(act,pagos,clis,cobs);
+  }catch(e){
+    document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;
+  }
+};
+
+// ══════════════════════════════════════════════
+// NOTIFICACIONES DE MORA
+// ══════════════════════════════════════════════
+function cargarMora(act,pagos,clis,cobs){
+  const hoy=today();
+  const enMora=[];
+
+  act.forEach(p=>{
+    const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+    const pasadas=dias.filter(d=>d<hoy);
+    if(!pasadas.length)return;
+
+    const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+    const graciasDia=new Set(pagos.filter(x=>x.prestamo_id===p.id&&x.tipo==='Gracia').map(x=>x.fecha));
+    const pagosDia={};
+    pagosP.forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+
+    let impagas=0;
+    let primeraMora=null;
+    pasadas.forEach(d=>{
+      if(graciasDia.has(d))return;
+      const pago=pagosDia[d]||0;
+      if(pago<p.cuota){
+        impagas++;
+        if(!primeraMora)primeraMora=d;
+      }
+    });
+
+    if(impagas===0)return;
+
+    // Calcular días desde primera mora
+    const diasMora=Math.floor((new Date(hoy)-new Date(primeraMora))/(1000*60*60*24));
+    const cli=clis.find(x=>x.id===p.cliente_id);
+    const cob=cobs.find(x=>x.id===cli?.cobrador_id);
+    const deuda=impagas*p.cuota;
+
+    enMora.push({
+      prestamo:p,cli,cob,impagas,diasMora,deuda,primeraMora
+    });
+  });
+
+  if(!enMora.length){
+    document.getElementById('panel-mora').innerHTML=`
+    <div class="card" style="border:1px solid #86efac">
+      <div style="color:var(--green);font-weight:600">✓ Sin clientes en mora — todo al día</div>
+    </div>`;
+    return;
+  }
+
+  // Ordenar por días de mora descendente
+  enMora.sort((a,b)=>b.diasMora-a.diasMora);
+
+  const gravedad=(d)=>d>=14?'var(--red)':d>=7?'var(--orange)':'#ca8a04';
+  const gravedadBg=(d)=>d>=14?'#fff8f8':d>=7?'#fff7ed':'#fefce8';
+  const gravedadBorder=(d)=>d>=14?'#fca5a5':d>=7?'#fed7aa':'#fde68a';
+  const gravedadLabel=(d)=>d>=14?'🔴 Mora grave':d>=7?'🟠 Mora moderada':'🟡 Mora leve';
+
+  document.getElementById('panel-mora').innerHTML=`
+  <div class="card" style="margin-top:10px">
+    <div class="card-title" style="color:var(--red)">⚠ Clientes en mora (${enMora.length})
+      <button class="btn btn-sm btn-r" onclick="enviarAlertas()">📱 Alertar a cobradores</button>
+    </div>
+    <div class="twrap"><table>
+      <thead><tr><th>Cliente</th><th>Cobrador</th><th>Impagas</th><th>Deuda mora</th><th>Días</th><th>Gravedad</th><th></th></tr></thead>
+      <tbody>
+        ${enMora.map(m=>`<tr style="background:${gravedadBg(m.diasMora)}">
+          <td><b>${m.cli?.nombre||'—'}</b><div style="font-size:10px;color:var(--muted)">${m.cli?.tel||''}</div></td>
+          <td style="font-size:11px">${m.cob?`#${m.cob.numero} ${m.cob.nombre}`:'—'}</td>
+          <td style="text-align:center;font-weight:700;color:var(--red)">${m.impagas}</td>
+          <td style="font-weight:700;color:var(--red)">${fmt(m.deuda)}</td>
+          <td style="text-align:center;font-weight:700;color:${gravedad(m.diasMora)}">${m.diasMora}</td>
+          <td><span style="background:${gravedadBg(m.diasMora)};color:${gravedad(m.diasMora)};border:1px solid ${gravedadBorder(m.diasMora)};border-radius:6px;padding:2px 7px;font-size:10px;font-weight:600">${gravedadLabel(m.diasMora)}</span></td>
+          <td>
+            <button class="btn btn-sm btn-w" onclick="alertaWA('${m.cli?.id}')">📱</button>
+            <button class="btn btn-sm btn-s" onclick="verCli('${m.cli?.id}')">Ver</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>
+  </div>`;
+
+  // Guardar en memoria para enviar alertas
+  window._enMora=enMora;
+}
+
+async function alertaWA(cliId){
+  // Reutiliza el resumen al cobrador
+  await resumenWA(cliId,'cobrador');
+}
+
+async function enviarAlertas(){
+  if(!window._enMora?.length){alert('Sin clientes en mora');return;}
+  // Agrupar por cobrador
+  const porCob={};
+  window._enMora.forEach(m=>{
+    const cobId=m.cob?.id||'sin';
+    if(!porCob[cobId])porCob[cobId]={cob:m.cob,clientes:[]};
+    porCob[cobId].clientes.push(m);
+  });
+  const cobIds=Object.keys(porCob);
+  if(!confirm(`¿Enviar alerta de mora a ${cobIds.length} cobrador${cobIds.length>1?'es':''}?`))return;
+  for(const cobId of cobIds){
+    const{cob,clientes}=porCob[cobId];
+    if(!cob?.tel)continue;
+    let msg=`*CREDIDEY — Alerta de mora*\n\nHola ${cob.nombre}, tenés ${clientes.length} cliente${clientes.length>1?'s':''} con cuotas impagas:\n\n`;
+    clientes.forEach((m,i)=>{
+      msg+=`*${i+1}. ${m.cli.nombre}*\n`;
+      msg+=`   ${m.impagas} cuota${m.impagas>1?'s':''} impaga${m.impagas>1?'s':''} · ${fmt(m.deuda)}\n`;
+      msg+=`   📞 ${m.cli.tel||'sin tel'}\n\n`;
+    });
+    msg+=`_CrediDey_`;
+    const tel=cob.tel.replace(/\D/g,'');
+    window.open(`https://wa.me/54${tel}?text=${encodeURIComponent(msg)}`,'_blank');
+    await new Promise(r=>setTimeout(r,800));
+  }
+}
+
+// ══════════════════════════════════════════════
+// COBRADORES
+// ══════════════════════════════════════════════
+PAGES.cobradores=async function(){
+  try{
+    const cobs=await GET('cobradores','?order=numero.asc');
+    const clis=await GET('clientes','?select=id,cobrador_id');
+    document.getElementById('content').innerHTML=`
+    <div class="card">
+      <div class="card-title">Cobradores <button class="btn btn-p btn-sm" onclick="modalNuevoCob()">+ Nuevo</button></div>
+      ${cobs.length?`
+      <div class="twrap"><table>
+        <thead><tr><th>N°</th><th>Nombre</th><th>Zona</th><th>Clientes</th><th>Teléfono</th><th></th></tr></thead>
+        <tbody>
+          ${cobs.map(c=>`<tr>
+            <td class="mono" style="color:var(--accent);font-weight:700">#${c.numero}</td>
+            <td><b>${c.nombre}</b></td>
+            <td>${c.zona||'—'}</td>
+            <td>${clis.filter(x=>x.cobrador_id===c.id).length}</td>
+            <td>${c.tel||'—'}</td>
+            <td style="white-space:nowrap">
+              <button class="btn btn-sm btn-s" onclick="editarCob('${c.id}')">✏</button>
+              <button class="btn btn-sm btn-s" onclick="previstaReporte('${c.id}')">👁 Vista previa</button>
+              <button class="btn btn-sm btn-w" onclick="reporteWA('${c.id}')">📱 WA</button>
+              <button class="btn btn-sm btn-p" onclick="planillaWA('${c.id}','${c.nombre}','${c.tel||''}')">📋 Planilla</button>
+              <button class="btn btn-sm btn-g" onclick="linkCobrador('${c.id}','${c.numero}','${c.nombre}','${c.tel||''}')">🔗 Link</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>`:'<div class="empty">No hay cobradores. Agregá el primero.</div>'}
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+function modalNuevoCob(){
+  openM('Nuevo cobrador',`
+    <div class="g2">
+      <div class="field"><label>Número *</label><input id="nc-num" type="number" placeholder="1"/></div>
+      <div class="field"><label>Nombre *</label><input id="nc-nom" placeholder="Juan Pérez"/></div>
+      <div class="field"><label>Zona</label><input id="nc-zona" placeholder="Centro, Norte..."/></div>
+      <div class="field"><label>Teléfono / WhatsApp</label><input id="nc-tel" placeholder="11-5503-1581"/></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-p" onclick="guardarCob()">Guardar</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+async function guardarCob(){
+  const nom=document.getElementById('nc-nom').value.trim();
+  const num=parseInt(document.getElementById('nc-num').value||0);
+  if(!nom||!num){alert('Nombre y número son obligatorios');return;}
+  try{
+    await POST('cobradores',{id:uid(),numero:num,nombre:nom,zona:document.getElementById('nc-zona').value,tel:document.getElementById('nc-tel').value});
+    closeM();PAGES.cobradores();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function editarCob(id){
+  const c=(await GET('cobradores',`?id=eq.${id}`))[0];
+  openM('Editar cobrador',`
+    <div class="g2">
+      <div class="field"><label>Número</label><input id="ec-num" value="${c.numero||''}"/></div>
+      <div class="field"><label>Nombre</label><input id="ec-nom" value="${c.nombre}"/></div>
+      <div class="field"><label>Zona</label><input id="ec-zona" value="${c.zona||''}"/></div>
+      <div class="field"><label>Teléfono</label><input id="ec-tel" value="${c.tel||''}"/></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-p" onclick="actualizarCob('${id}')">Guardar</button>
+      <button class="btn btn-r" onclick="eliminarCob('${id}')">Eliminar</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+async function actualizarCob(id){
+  await PATCH('cobradores',`?id=eq.${id}`,{numero:parseInt(document.getElementById('ec-num').value),nombre:document.getElementById('ec-nom').value,zona:document.getElementById('ec-zona').value,tel:document.getElementById('ec-tel').value});
+  closeM();PAGES.cobradores();
+}
+
+async function eliminarCob(id){
+  if(!confirm('¿Eliminar este cobrador?'))return;
+  await DEL('cobradores',`?id=eq.${id}`);
+  closeM();PAGES.cobradores();
+}
+
+async function reporteWA(cobId){
+  const cob=(await GET('cobradores',`?id=eq.${cobId}`))[0];
+  const hoy=today();
+
+  // Ciclo sábado-viernes
+  const ahora=new Date();
+  const diaSemana=ahora.getDay();
+  const diasDesdeSab=diaSemana===6?0:(diaSemana+1)%7;
+  const sabado=new Date(ahora);sabado.setDate(ahora.getDate()-diasDesdeSab);
+  const viernes=new Date(sabado);viernes.setDate(sabado.getDate()+6);
+  const semDesde=sabado.toISOString().slice(0,10);
+  const semHasta=viernes.toISOString().slice(0,10);
+
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const prest=await GET('prestamos','?estado=eq.Activo');
+  const pagos=await GET('pagos',`?fecha=gte.${semDesde}&fecha=lte.${semHasta}`);
+
+  const misIds=prest.filter(p=>clis.find(c=>c.id===p.cliente_id)).map(p=>p.id);
+  const pagosSemana=pagos.filter(p=>misIds.includes(p.prestamo_id)&&p.tipo!=='Gracia');
+  const total=pagosSemana.reduce((a,p)=>a+p.importe,0);
+  const comision=Math.round(total*0.08);
+
+  // Armar detalle por cliente — solo los que tienen pagos esta semana
+  const detalle=[];
+  clis.forEach(cli=>{
+    const prestCli=prest.filter(x=>x.cliente_id===cli.id&&x.estado==='Activo');
+    prestCli.forEach(p=>{
+      const pagosCli=pagosSemana.filter(x=>x.prestamo_id===p.id);
+      if(!pagosCli.length)return;
+      const cobradoCli=pagosCli.reduce((a,x)=>a+x.importe,0);
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const nr=dias.filter(d=>d<=hoy).length;
+      detalle.push({nombre:cli.nombre,nr,cuotas:p.cuotas,cuota:p.cuota,cobrado:cobradoCli});
+    });
+  });
+
+  let msg=`*CREDIDEY — Reporte semanal*\n`;
+  msg+=`Cobrador: *${cob.nombre}*\n`;
+  msg+=`Semana: ${fmtD(semDesde)} al ${fmtD(semHasta)}\n\n`;
+  if(detalle.length){
+    msg+=`*Clientes:*\n`;
+    detalle.forEach(d=>{
+      const diferencia=d.cobrado-d.cuota;
+      const extra=diferencia>0?` (+${fmt(diferencia)})`:'';
+      const parcial=diferencia<0?` (parcial, falta ${fmt(Math.abs(diferencia))})`:'';
+      msg+=`• ${d.nombre} — Cuota #${d.nr}/${d.cuotas} — ${fmt(d.cobrado)}${extra}${parcial}\n`;
+    });
+  } else {
+    msg+=`Sin cobros registrados esta semana.\n`;
+  }
+  msg+=`\n*Recaudado semana: ${fmt(total)}*\n`;
+  msg+=`*Tu comisión (8%): ${fmt(comision)}*\n`;
+  msg+=`\n_CrediDey_`;
+
+  const tel=(cob.tel||'').replace(/\D/g,'');
+  window.open(tel?`https://wa.me/54${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════
+// CLIENTES
+// ══════════════════════════════════════════════
+PAGES.clientes=async function(buscar=''){
+  try{
+    const[clis,cobs]=await Promise.all([GET('clientes','?order=nombre.asc'),GET('cobradores','?order=numero.asc')]);
+    const prest=await GET('prestamos','?estado=eq.Activo&select=id,cliente_id,total,cuota,monto,plan,cuotas,fecha_inicio');
+    const pagos=await GET('pagos','?select=prestamo_id,importe,tipo,fecha');
+    const hoy=today();
+
+    const filt=clis.filter(c=>c.nombre?.toLowerCase().includes(buscar.toLowerCase())||c.dni?.includes(buscar));
+
+    document.getElementById('content').innerHTML=`
+    <div class="card">
+      <div class="card-title">
+        Clientes (${filt.length})
+        <button class="btn btn-p btn-sm" onclick="modalNuevoCli()">+ Nuevo cliente</button>
+      </div>
+      <div style="margin-bottom:10px">
+        <input placeholder="Buscar por nombre o DNI..." value="${buscar}" oninput="PAGES.clientes(this.value)" style="max-width:300px"/>
+      </div>
+      ${filt.length?`
+      <div class="twrap"><table>
+        <thead><tr><th>Nombre</th><th>Teléfono</th><th>Cobrador</th><th>Cuota</th><th>Pagas</th><th>Impagas</th><th>Resta</th><th></th></tr></thead>
+        <tbody>
+          ${filt.map(c=>{
+            const cob=cobs.find(x=>x.id===c.cobrador_id);
+            const activos=prest.filter(x=>x.cliente_id===c.id);
+
+            if(!activos.length){
+              return`<tr>
+                <td><b>${c.nombre}</b></td>
+                <td>${c.tel||'—'}</td>
+                <td>${cob?`#${cob.numero} ${cob.nombre}`:'—'}</td>
+                <td style="color:var(--muted)">—</td>
+                <td style="color:var(--muted)">—</td>
+                <td style="color:var(--muted)">—</td>
+                <td style="color:var(--muted)">Sin préstamo</td>
+                <td style="white-space:nowrap">
+                  <button class="btn btn-sm btn-s" onclick="verCli('${c.id}')">Ver</button>
+                  <button class="btn btn-sm btn-y" onclick="editarCli('${c.id}')">✏</button>
+                  <button class="btn btn-sm btn-r" onclick="eliminarCli('${c.id}','${c.nombre}')">🗑</button>
+                </td>
+              </tr>`;
+            }
+
+            // Sumar todos los préstamos activos
+            let cuotaTotal=0, saldoTotal=0, pagasTotal=0, impagasTotal=0;
+            activos.forEach(p=>{
+              cuotaTotal+=p.cuota||0;
+              const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo');
+              const abonado=pagosP.reduce((a,x)=>a+x.importe,0);
+              saldoTotal+=Math.max(0,(p.total||0)-abonado);
+
+              // Cuotas pagas/impagas por préstamo
+              const pagosDia={};
+              pagosP.forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+              const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+              dias.forEach(d=>{
+                if(d>hoy)return;
+                const pago=pagosDia[d]||0;
+                if(pago>=(p.cuota||0))pagasTotal++;
+                else impagasTotal++;
+              });
+            });
+
+            const sColor=saldoTotal>0?'var(--orange)':'var(--green)';
+            const paralela=activos.length>1?` <span style="font-size:9px;background:#7c3aed;color:#fff;border-radius:4px;padding:1px 5px">×${activos.length}</span>`:'';
+
+            return`<tr>
+              <td><b>${c.nombre}</b>${paralela}</td>
+              <td>${c.tel||'—'}</td>
+              <td>${cob?`#${cob.numero} ${cob.nombre}`:'—'}</td>
+              <td style="color:var(--cyan);font-weight:600">${fmt(cuotaTotal)}</td>
+              <td style="color:var(--green);font-weight:600">${pagasTotal}</td>
+              <td style="color:${impagasTotal>0?'var(--red)':'var(--muted)'};font-weight:${impagasTotal>0?'700':'400'}">${impagasTotal>0?'⚠ '+impagasTotal:impagasTotal}</td>
+              <td style="color:${sColor};font-weight:700">${fmt(saldoTotal)}</td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-sm btn-s" onclick="verCli('${c.id}')">Ver</button>
+                <button class="btn btn-sm btn-y" onclick="editarCli('${c.id}')">✏</button>
+                <button class="btn btn-sm btn-r" onclick="eliminarCli('${c.id}','${c.nombre}')">🗑</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`:'<div class="empty">No hay clientes</div>'}
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+async function modalNuevoCli(){
+  const cobs=await GET('cobradores','?order=numero.asc');
+  openM('Nuevo cliente',`
+    <div class="g2">
+      <div class="field"><label>Nombre *</label><input id="ncl-nom" placeholder="Juan Pérez"/></div>
+      <div class="field"><label>DNI</label><input id="ncl-dni" placeholder="30.000.000"/></div>
+      <div class="field"><label>Teléfono</label><input id="ncl-tel" placeholder="11-5503-0000"/></div>
+      <div class="field"><label>Dirección</label><input id="ncl-dir" placeholder="Av. Colón 1240"/></div>
+      <div class="field"><label>Localidad</label><input id="ncl-loc" placeholder="Córdoba"/></div>
+      <div class="field"><label>Cobrador</label>
+        <select id="ncl-cob">
+          <option value="">Sin asignar</option>
+          ${cobs.map(c=>`<option value="${c.id}">#${c.numero} ${c.nombre}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div class="sep"></div>
+    <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:10px">PRÉSTAMO (podés agregar después)</div>
+    <div class="g2">
+      <div class="field"><label>Monto prestado ($)</label><input id="ncl-monto" type="number" placeholder="0" oninput="prevCli()"/></div>
+      <div class="field"><label>Plan</label>
+        <select id="ncl-plan" onchange="prevCli()">
+          <option value="20">20 días (+25%)</option>
+          <option value="28">28 días (+40%)</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha cuota N°1 *</label><input id="ncl-fecha" type="date" oninput="prevCli()"/></div>
+      <div class="field"><label>¿Cuántas cuotas ya pagó? *</label><input id="ncl-cpag" type="number" placeholder="0" min="0" value="0" oninput="prevCli()"/></div>
+    </div>
+    <div id="ncl-prev" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div class="g4" style="gap:8px;margin-bottom:8px">
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">TOTAL</div><div id="pv-total" style="font-weight:700;color:#7c3aed"></div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">CUOTA DIARIA</div><div id="pv-cuota" style="font-weight:700;color:var(--cyan)"></div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">YA PAGÓ</div><div id="pv-cpag" style="font-weight:700;color:var(--green)"></div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">SALDO</div><div id="pv-saldo" style="font-weight:700;color:var(--orange)"></div></div>
+      </div>
+      <div id="pv-condicion" style="border-radius:6px;padding:8px 10px;font-size:12px;font-weight:600;display:none"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="guardarCli()">Guardar cliente</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+  const m=new Date();m.setDate(m.getDate()+1);
+  while(m.getDay()===0)m.setDate(m.getDate()+1);
+  document.getElementById('ncl-fecha').value=m.toISOString().slice(0,10);
+}
+
+function prevCli(){
+  const monto=parseFloat(document.getElementById('ncl-monto')?.value||0);
+  const plan=document.getElementById('ncl-plan')?.value;
+  const fechaVal=document.getElementById('ncl-fecha')?.value;
+  const cpagInput=parseInt(document.getElementById('ncl-cpag')?.value||0);
+  const prev=document.getElementById('ncl-prev');
+  if(!prev)return;
+  if(monto>0){
+    const{total,cuota,cuotas}=calcPlan(monto,plan);
+    const abonado=cpagInput*cuota;
+    // Calcular cuotas que deberían estar pagas según la fecha
+    let cuotasDebidas=0;
+    if(fechaVal){
+      const hoy=today();
+      const dias=diasHabiles(fechaVal,cuotas);
+      cuotasDebidas=dias.filter(d=>d<=hoy).length;
+    }
+    // Condición
+    const cond=document.getElementById('pv-condicion');
+    if(cond){
+      if(cuotasDebidas===0){
+        cond.style.display='none';
+      } else {
+        cond.style.display='block';
+        const diff=cpagInput-cuotasDebidas;
+        if(diff>=0){
+          cond.style.background='#f0fdf4';cond.style.color='var(--green)';cond.style.border='1px solid #86efac';
+          cond.textContent=diff===0?`✓ Al día (${cpagInput} de ${cuotasDebidas} cuotas debidas pagas)`:`✓ Adelantado — pagó ${cpagInput}, debía ${cuotasDebidas}`;
+        } else {
+          cond.style.background='#fff8f8';cond.style.color='var(--red)';cond.style.border='1px solid #fca5a5';
+          cond.textContent=`⚠ Con atraso — pagó ${cpagInput}, debía ${cuotasDebidas} (${Math.abs(diff)} impaga${Math.abs(diff)>1?'s':''})`;
+        }
+      }
+    }
+    document.getElementById('pv-total').textContent=fmt(total);
+    document.getElementById('pv-cuota').textContent=fmt(cuota);
+    document.getElementById('pv-cpag').textContent=`${cpagInput} cuotas (${fmt(abonado)})`;
+    document.getElementById('pv-saldo').textContent=fmt(Math.max(0,total-abonado));
+    prev.style.display='block';
+  }else prev.style.display='none';
+}
+
+async function guardarCli(){
+  const nom=document.getElementById('ncl-nom').value.trim();
+  if(!nom){alert('El nombre es obligatorio');return;}
+  try{
+    const cid=uid();
+    await POST('clientes',{
+      id:cid,nombre:nom,
+      dni:document.getElementById('ncl-dni').value,
+      tel:document.getElementById('ncl-tel').value,
+      dir:document.getElementById('ncl-dir').value,
+      loc:document.getElementById('ncl-loc').value,
+      cobrador_id:document.getElementById('ncl-cob').value||null,
+    });
+    const monto=parseFloat(document.getElementById('ncl-monto').value||0);
+    const plan=document.getElementById('ncl-plan').value;
+    const fecha=document.getElementById('ncl-fecha').value;
+    const cpag=parseInt(document.getElementById('ncl-cpag').value||0);
+    if(monto>0&&fecha){
+      const{total,cuotas,cuota}=calcPlan(monto,plan);
+      const pid=uid();
+      await POST('prestamos',{id:pid,cliente_id:cid,monto,plan,total,cuotas,cuota,fecha_inicio:fecha,estado:'Activo'});
+      // Registrar cada cuota paga como un pago individual en su día correspondiente
+      if(cpag>0){
+        const dias=diasHabiles(fecha,cuotas);
+        for(let i=0;i<cpag&&i<dias.length;i++){
+          await POST('pagos',{id:uid(),prestamo_id:pid,importe:cuota,fecha:dias[i],tipo:'Normal'});
+        }
+      }
+    }
+    closeM();PAGES.clientes();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function eliminarCli(id, nombre){
+  if(!confirm('¿Eliminar a '+nombre+' y todos sus datos?')) return;
+  try{
+    // Borrar pagos de sus préstamos
+    const prest = await GET('prestamos',`?cliente_id=eq.${id}&select=id`);
+    for(const p of prest){
+      await DEL('pagos',`?prestamo_id=eq.${p.id}`);
+    }
+    await DEL('prestamos',`?cliente_id=eq.${id}`);
+    await DEL('clientes',`?id=eq.${id}`);
+    PAGES.clientes();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function editarCli(id){
+  const[c,cobs]=await Promise.all([GET('clientes',`?id=eq.${id}`).then(r=>r[0]),GET('cobradores','?order=numero.asc')]);
+  openM('Editar cliente',`
+    <div class="g2">
+      <div class="field"><label>Nombre</label><input id="ecl-nom" value="${c.nombre}"/></div>
+      <div class="field"><label>DNI</label><input id="ecl-dni" value="${c.dni||''}"/></div>
+      <div class="field"><label>Teléfono</label><input id="ecl-tel" value="${c.tel||''}"/></div>
+      <div class="field"><label>Dirección</label><input id="ecl-dir" value="${c.dir||''}"/></div>
+      <div class="field"><label>Localidad</label><input id="ecl-loc" value="${c.loc||''}"/></div>
+      <div class="field"><label>Cobrador</label>
+        <select id="ecl-cob">
+          <option value="">Sin asignar</option>
+          ${cobs.map(cb=>`<option value="${cb.id}"${cb.id===c.cobrador_id?' selected':''}>#${cb.numero} ${cb.nombre}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-p" onclick="actualizarCli('${id}')">Guardar</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+async function actualizarCli(id){
+  await PATCH('clientes',`?id=eq.${id}`,{nombre:document.getElementById('ecl-nom').value,dni:document.getElementById('ecl-dni').value,tel:document.getElementById('ecl-tel').value,dir:document.getElementById('ecl-dir').value,loc:document.getElementById('ecl-loc').value,cobrador_id:document.getElementById('ecl-cob').value||null});
+  closeM();PAGES.clientes();
+}
+
+async function verCli(id){
+  const[c,cobs]=await Promise.all([GET('clientes',`?id=eq.${id}`).then(r=>r[0]),GET('cobradores','?select=id,numero,nombre')]);
+  const prest=await GET('prestamos',`?cliente_id=eq.${id}&order=created_at.desc`);
+  const cob=cobs.find(x=>x.id===c.cobrador_id);
+  const hoy=today();
+
+  let html=`
+    <div style="margin-bottom:12px">
+      <div style="font-size:17px;font-weight:700">${c.nombre}</div>
+      <div style="font-size:12px;color:var(--muted)">📞 ${c.tel||'—'} · 📍 ${c.dir||'—'}${c.loc?' ('+c.loc+')':''}</div>
+      <div style="font-size:12px;color:var(--muted)">Cobrador: ${cob?`#${cob.numero} ${cob.nombre}`:'Sin asignar'}</div>
+    </div>`;
+
+  for(const p of prest){
+    const pagosP=await GET('pagos',`?prestamo_id=eq.${p.id}&order=fecha.asc`);
+    // Separar recargos de pagos reales
+    const pagosReales=pagosP.filter(x=>x.tipo!=='Recargo');
+    const recargos=pagosP.filter(x=>x.tipo==='Recargo');
+    const totalRecargo=recargos.length; // cantidad de recargos aplicados
+    const importeRecargo=p.total-(p.monto*(1+(p.plan==='20'?.25:.40))); // recargo = diferencia respecto al total original
+    const abonado=pagosReales.reduce((a,x)=>a+x.importe,0);
+    const saldo=Math.max(0,p.total-abonado);
+    const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+    const nroCuota=dias.filter(d=>d<=hoy).length; // cuota en la que va hoy
+    const pct=Math.round((abonado/p.total)*100);
+
+    // Calcular cuotas pagas, impagas, parciales y restantes
+    const pagosDia={};
+    const graciasDia=new Set();
+    pagosReales.filter(x=>x.tipo!=='Gracia').forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+    pagosP.filter(x=>x.tipo==='Gracia').forEach(g=>graciasDia.add(g.fecha));
+
+    let cuotasPagas=0;
+    let cuotasImpagas=0;
+    let cuotasParciales=0;
+    let restaParcial=0; // cuánto falta para completar la cuota parcial
+    dias.forEach(d=>{
+      if(d>hoy)return;
+      if(graciasDia.has(d))return; // gracia = día libre, no cuenta ni como paga ni impaga
+      const pago=pagosDia[d]||0;
+      if(pago>=p.cuota)cuotasPagas++;
+      else if(pago>0){cuotasParciales++;restaParcial+=p.cuota-pago;}
+      else cuotasImpagas++;
+    });
+    const cuotasRestantes=p.cuotas-cuotasPagas-cuotasParciales;
+
+    // Condición
+    let condColor='var(--green)';
+    let condLabel='✓ Al día';
+    let condBg='#f0fdf4';
+    if(p.estado==='Finalizado'){condColor='#64748b';condLabel='✓ Finalizado';condBg='#f8fafc';}
+    else if(cuotasImpagas>0||cuotasParciales>0){
+      condColor='var(--red)';condBg='#fff8f8';
+      const partes=[];
+      if(cuotasImpagas>0)partes.push(`${cuotasImpagas} impaga${cuotasImpagas>1?'s':''}`);
+      if(cuotasParciales>0)partes.push(`${cuotasParciales} parcial${cuotasParciales>1?'es':''} (resta ${fmt(restaParcial)})`);
+      condLabel=`⚠ ${partes.join(' · ')}`;
+    }
+
+    // Calendario
+    let calHTML='<div class="cal">';
+    ['L','M','X','J','V','S','D'].forEach(d=>calHTML+=`<div class="cal-h">${d}</div>`);
+    if(dias.length>0){
+      const pri=new Date(dias[0]+'T12:00:00');
+      const offset=(pri.getDay()+6)%7;
+      for(let i=0;i<offset;i++)calHTML+='<div></div>';
+      const d=new Date(dias[0]+'T12:00:00');
+      const ult=new Date(dias[dias.length-1]+'T12:00:00');
+      let di=0;
+      while(d<=ult){
+        const ds=d.toISOString().slice(0,10);
+        if(d.getDay()===0){calHTML+=`<div class="cal-d dom">D</div>`;}
+        else{
+          const pago=pagosDia[ds]||0;
+          const fut=ds>hoy;
+          const esH=ds===hoy;
+          let cls='cal-d ';
+          let ico='';
+          if(fut){cls+='futuro';ico=String(di+1);}
+          else if(graciasDia.has(ds)){cls+='futuro';ico='G';} // día de gracia en gris-azul
+          else if(pago>=p.cuota){cls+='ok';ico='✓';}
+          else if(pago>0){cls+='parcial';ico='~';}
+          else{cls+='mal';ico='✗';}
+          if(esH)cls+=' hoy';
+          calHTML+=`<div class="${cls}" title="${ds}${pago?'\n'+fmt(pago):''}">${d.getDate()}<br><span style="font-size:7px">${ico}</span></div>`;
+          di++;
+        }
+        d.setDate(d.getDate()+1);
+      }
+    }
+    calHTML+='</div>';
+
+    html+=`
+    <div style="background:#f8fafc;border-radius:10px;padding:13px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
+        <div>
+          <div class="mono" style="color:var(--accent)">${p.plan} días · inicio ${fmtD(p.fecha_inicio)}</div>
+        </div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">
+          ${p.estado==='Activo'?`
+          <button class="btn btn-sm btn-p" onclick="closeM();modalPago('${p.id}')">+ Pago</button>
+          <button class="btn btn-sm btn-y" onclick="closeM();modalRecargo('${p.id}')">+ Recargo</button>
+          <button class="btn btn-sm btn-s" onclick="editarPrest('${p.id}','${c.id}')">✏ Editar</button>
+          `:''}
+          ${badge(p.estado,p.estado==='Activo'?'#16a34a':'#64748b')}
+        </div>
+      </div>
+
+      <!-- Resumen financiero -->
+      <div class="g4" style="gap:8px;margin-bottom:10px">
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">MONTO SOLICITADO</div><b>${fmt(p.monto)}</b></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">TOTAL CON INTERÉS</div><b style="color:#7c3aed">${fmt(p.total)}</b><div style="font-size:9px;color:var(--muted)">${p.plan==='20'?'+25%':'+40%'}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">ABONADO</div><b style="color:var(--green)">${fmt(abonado)}</b></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">SALDO RESTANTE</div><b style="color:var(--orange)">${fmt(saldo)}</b></div>
+      </div>
+
+      <!-- Condición destacada -->
+      <div style="background:${condBg};border:1px solid ${condColor}33;border-radius:8px;padding:10px 12px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px">
+        <div style="font-weight:700;color:${condColor};font-size:13px">${condLabel}</div>
+        <div style="font-size:11px;color:var(--muted)">Cuota diaria: <b style="color:var(--text)">${fmt(p.cuota)}</b></div>
+      </div>
+
+      <!-- Cuotas detalle -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:10px">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">VA POR CUOTA</div>
+          <div style="font-weight:800;font-size:16px;color:var(--accent)">${nroCuota}<span style="font-size:11px;font-weight:400;color:var(--muted)"> / ${p.cuotas}</span></div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">PAGAS</div>
+          <div style="font-weight:800;font-size:16px;color:var(--green)">${cuotasPagas}<span style="font-size:11px;font-weight:400;color:var(--muted)"> / ${p.cuotas}</span></div>
+        </div>
+        <div style="background:${cuotasParciales>0?'#fffbeb':'#f8fafc'};border:1px solid ${cuotasParciales>0?'#fde68a':'var(--border)'};border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">PARCIALES</div>
+          <div style="font-weight:800;font-size:16px;color:${cuotasParciales>0?'var(--yellow)':'var(--muted)'}">${cuotasParciales}</div>
+          ${cuotasParciales>0?`<div style="font-size:8px;color:var(--yellow)">Resta ${fmt(restaParcial)}</div>`:''}
+        </div>
+        <div style="background:${cuotasImpagas>0?'#fff8f8':'#f8fafc'};border:1px solid ${cuotasImpagas>0?'#fca5a5':'var(--border)'};border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">IMPAGAS</div>
+          <div style="font-weight:800;font-size:16px;color:${cuotasImpagas>0?'var(--red)':'var(--muted)'}">${cuotasImpagas}</div>
+        </div>
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:8px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">FALTAN</div>
+          <div style="font-weight:800;font-size:16px;color:var(--cyan)">${cuotasRestantes}</div>
+        </div>
+      </div>
+
+      ${importeRecargo>0?`
+      <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12px">
+        ⚠ <b style="color:var(--orange)">Recargo aplicado:</b> ${fmt(importeRecargo)} · Total ajustado: ${fmt(p.total)}
+      </div>`:''}
+
+      <!-- Barra de progreso -->
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-bottom:3px">
+        <span>${pct}% completado</span>
+        <span>${cuotasPagas} de ${p.cuotas} cuotas pagas</span>
+      </div>
+      <div class="prog"><div class="prog-f" style="width:${Math.min(pct,100)}%"></div></div>
+
+      <div style="font-size:9px;color:var(--muted);margin:8px 0 4px">✓ Verde=pagó &nbsp; ~ Amarillo=parcial &nbsp; ✗ Rojo=no pagó</div>
+      ${calHTML}
+      ${pagosP.length?`
+      <details style="margin-top:8px">
+        <summary style="cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">Ver pagos (${pagosReales.length})${recargos.length?` · ${recargos.length} recargo(s)`:''}</summary>
+        <div class="twrap" style="margin-top:6px"><table>
+          <thead><tr><th>Fecha</th><th>Importe</th><th>Tipo</th><th></th></tr></thead>
+          <tbody>
+            ${pagosP.map(pg=>`<tr>
+              <td class="mono">${fmtD(pg.fecha)}</td>
+              <td style="color:${pg.tipo==='Recargo'?'var(--red)':pg.tipo==='Gracia'?'var(--cyan)':'var(--green)'};font-weight:600">${pg.tipo==='Recargo'?'—':pg.tipo==='Gracia'?'🕊 Gracia':fmt(pg.importe)}</td>
+              <td>${badge(pg.tipo||'Normal',pg.tipo==='Recargo'?'#dc2626':pg.tipo==='Gracia'?'#0891b2':pg.tipo==='Parcial'?'#ca8a04':pg.tipo==='Saldo inicial'?'#0891b2':'#16a34a')}${pg.tipo==='Recargo'&&pg.nota?` <span style="font-size:10px;color:var(--muted)">${pg.nota}</span>`:''}</td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-sm btn-y" onclick="editarPago('${pg.id}','${p.id}','${id}')">✏</button>
+                <button class="btn btn-sm btn-r" onclick="eliminarPago('${pg.id}','${p.id}','${id}')">🗑</button>
+              </td>
+            </tr>`).join('')}
+          </tbody>
+        </table></div>
+      </details>`:''}
+    </div>`;
+  }
+
+  if(!prest.length)html+=`<div class="empty">Sin préstamos</div>`;
+  html+=`
+  <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+    <button class="btn btn-p btn-sm" onclick="closeM();modalNuevoPrest('${id}')">+ Nuevo préstamo</button>
+    <button class="btn btn-w btn-sm" onclick="resumenWA('${id}','cliente')">📱 WhatsApp cliente</button>
+    <button class="btn btn-s btn-sm" onclick="resumenWA('${id}','cobrador')">📱 WhatsApp cobrador</button>
+  </div>`;
+
+  openM(c.nombre,html);
+}
+
+async function modalNuevoPrest(cliId){
+  openM('Nuevo préstamo',`
+    <div class="g2">
+      <div class="field"><label>Monto *</label><input id="np-monto" type="number" placeholder="100000" oninput="prevPrest()"/></div>
+      <div class="field"><label>Plan</label>
+        <select id="np-plan" onchange="prevPrest()">
+          <option value="20">20 días (+25%)</option>
+          <option value="28">28 días (+40%)</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha cuota N°1 *</label><input id="np-fecha" type="date" oninput="prevPrest()"/></div>
+      <div class="field"><label>Ya abonado ($)</label><input id="np-abonado" type="number" placeholder="0" value="0" oninput="prevPrest()"/></div>
+    </div>
+    <div id="np-prev" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div class="g4" style="gap:8px">
+        <div><div style="font-size:9px;color:var(--muted)">TOTAL</div><div id="np-total" style="font-weight:700;color:#7c3aed"></div></div>
+        <div><div style="font-size:9px;color:var(--muted)">CUOTA</div><div id="np-cuota" style="font-weight:700;color:var(--cyan)"></div></div>
+        <div><div style="font-size:9px;color:var(--muted)">YA PAGÓ</div><div id="np-cpag" style="font-weight:700;color:var(--green)"></div></div>
+        <div><div style="font-size:9px;color:var(--muted)">SALDO</div><div id="np-saldo" style="font-weight:700;color:var(--orange)"></div></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="guardarPrest('${cliId}')">Otorgar</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+  const m=new Date();m.setDate(m.getDate()+1);
+  while(m.getDay()===0)m.setDate(m.getDate()+1);
+  document.getElementById('np-fecha').value=m.toISOString().slice(0,10);
+}
+
+function prevPrest(){
+  const monto=parseFloat(document.getElementById('np-monto')?.value||0);
+  const plan=document.getElementById('np-plan')?.value;
+  const abonado=parseFloat(document.getElementById('np-abonado')?.value||0);
+  const prev=document.getElementById('np-prev');
+  if(!prev)return;
+  if(monto>0){
+    const{total,cuota}=calcPlan(monto,plan);
+    document.getElementById('np-total').textContent=fmt(total);
+    document.getElementById('np-cuota').textContent=fmt(cuota);
+    document.getElementById('np-cpag').textContent=`${Math.floor(abonado/cuota)} cuotas`;
+    document.getElementById('np-saldo').textContent=fmt(Math.max(0,total-abonado));
+    prev.style.display='block';
+  }else prev.style.display='none';
+}
+
+async function guardarPrest(cliId){
+  const monto=parseFloat(document.getElementById('np-monto').value||0);
+  const plan=document.getElementById('np-plan').value;
+  const fecha=document.getElementById('np-fecha').value;
+  const abonado=parseFloat(document.getElementById('np-abonado').value||0);
+  if(!monto||!fecha){alert('Completá todos los campos');return;}
+  try{
+    const{total,cuotas,cuota}=calcPlan(monto,plan);
+    const pid=uid();
+    await POST('prestamos',{id:pid,cliente_id:cliId,monto,plan,total,cuotas,cuota,fecha_inicio:fecha,estado:'Activo'});
+    if(abonado>0)await POST('pagos',{id:uid(),prestamo_id:pid,importe:abonado,fecha:fecha,tipo:'Saldo inicial'});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function modalPago(prestId){
+  const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+  const c=(await GET('clientes',`?id=eq.${p.cliente_id}`))[0];
+  const pagosP=await GET('pagos',`?prestamo_id=eq.${prestId}`);
+  const abonado=pagosP.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+  const saldo=Math.max(0,p.total-abonado);
+  openM(`Registrar pago — ${c.nombre}`,`
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:11px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px">
+        <div>Cuota diaria: <b style="color:var(--cyan)">${fmt(p.cuota)}</b></div>
+        <div>Saldo total: <b style="color:var(--orange)">${fmt(saldo)}</b></div>
+      </div>
+    </div>
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input id="rp-fecha" type="date" value="${today()}"/></div>
+      <div class="field">
+        <label>Monto cobrado <span style="font-size:10px;color:var(--muted)">(cuota = ${fmt(p.cuota)})</span></label>
+        <input id="rp-imp" type="number" value="${p.cuota}" oninput="prevPago(${p.cuota},${saldo})"/>
+      </div>
+    </div>
+    <div id="rp-info" style="border-radius:7px;padding:8px 12px;margin-bottom:10px;font-size:12px;font-weight:600;background:#f0fdf4;border:1px solid #86efac;color:var(--green)">
+      ✓ Cuota completa
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="guardarPago('${prestId}','${p.cliente_id}',${p.cuota},${saldo})">✓ Registrar</button>
+      <button class="btn btn-y" onclick="guardarGracia('${prestId}','${p.cliente_id}')">🕊 Día de gracia</button>
+      <button class="btn btn-r" onclick="closeM();modalRecargo('${prestId}')">+ Recargo</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+function prevPago(cuota,saldo){
+  const imp=parseFloat(document.getElementById('rp-imp')?.value||0);
+  const info=document.getElementById('rp-info');
+  if(!info)return;
+  if(imp<=0){info.style.background='#f8fafc';info.style.border='1px solid var(--border)';info.style.color='var(--muted)';info.textContent='Ingresá un monto';}
+  else if(imp>=saldo){info.style.background='#f0fdf4';info.style.border='1px solid #86efac';info.style.color='var(--green)';info.textContent=`✓ Cancela el préstamo — saldo restante: ${fmt(Math.max(0,saldo-imp))}`;}
+  else if(imp>=cuota){info.style.background='#f0fdf4';info.style.border='1px solid #86efac';info.style.color='var(--green)';info.textContent=imp>cuota?`✓ Cuota completa + adelanto de ${fmt(imp-cuota)}`:'✓ Cuota completa';}
+  else{info.style.background='#fffbeb';info.style.border='1px solid #fde68a';info.style.color='#92400e';info.textContent=`~ Parcial — faltan ${fmt(cuota-imp)} para completar la cuota`;}
+}
+
+async function guardarPago(prestId,cliId,cuota,saldo){
+  const importe=parseFloat(document.getElementById('rp-imp').value||0);
+  const fecha=document.getElementById('rp-fecha').value;
+  if(!importe||!fecha){alert('Completá todos los campos');return;}
+  // Tipo automático
+  let tipo='Normal';
+  if(importe>=saldo)tipo='Normal'; // cancela todo
+  else if(importe<cuota)tipo='Parcial';
+  try{
+    await POST('pagos',{id:uid(),prestamo_id:prestId,importe,fecha,tipo});
+    const pagosActualiz=await GET('pagos',`?prestamo_id=eq.${prestId}`);
+    const abonadoTotal=pagosActualiz.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+    const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+    if(abonadoTotal>=p.total)await PATCH('prestamos',`?id=eq.${prestId}`,{estado:'Finalizado'});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function modalRecargo(prestId){
+  const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+  const c=(await GET('clientes',`?id=eq.${p.cliente_id}`))[0];
+  openM(`Agregar recargo — ${c.nombre}`,`
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input id="rec-fecha" type="date" value="${today()}"/></div>
+      <div class="field"><label>Importe del recargo *</label><input id="rec-imp" type="number" placeholder="0"/></div>
+    </div>
+    <div class="field"><label>Motivo</label><input id="rec-mot" placeholder="Atraso X días..."/></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn btn-r" onclick="guardarRecargo('${prestId}','${p.cliente_id}')">Agregar recargo</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+async function guardarRecargo(prestId,cliId){
+  const importe=parseFloat(document.getElementById('rec-imp').value||0);
+  if(!importe){alert('Ingresá el importe');return;}
+  try{
+    const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+    await PATCH('prestamos',`?id=eq.${prestId}`,{total:p.total+importe});
+    await POST('pagos',{id:uid(),prestamo_id:prestId,importe:0,fecha:document.getElementById('rec-fecha').value,tipo:'Recargo',nota:document.getElementById('rec-mot').value});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function resumenWA(cliId,destino='cliente'){
+  const c=(await GET('clientes',`?id=eq.${cliId}`))[0];
+  const p=(await GET('prestamos',`?cliente_id=eq.${cliId}&estado=eq.Activo`))[0];
+  if(!p){alert('Sin préstamo activo');return;}
+  const pagosP=await GET('pagos',`?prestamo_id=eq.${p.id}&order=fecha.asc`);
+  const pagosReales=pagosP.filter(x=>x.tipo!=='Recargo');
+  const recargos=pagosP.filter(x=>x.tipo==='Recargo');
+  const abonado=pagosReales.filter(x=>x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+  const hoy=today();
+  const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+  const nr=dias.filter(d=>d<=hoy).length;
+
+  const pagosDia={};
+  const graciasDia=new Set();
+  pagosReales.filter(x=>x.tipo!=='Gracia').forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+  pagosReales.filter(x=>x.tipo==='Gracia').forEach(g=>graciasDia.add(g.fecha));
+
+  let cuotasPagas=0,cuotasImpagas=0;
+  dias.forEach(d=>{
+    if(d>hoy)return;
+    if(graciasDia.has(d))return; // gracia = día libre
+    const pago=pagosDia[d]||0;
+    if(pago>=(p.cuota||0))cuotasPagas++;
+    else cuotasImpagas++;
+  });
+  const cuotasRestantes=p.cuotas-cuotasPagas;
+
+  let condicion='✅ Al día';
+  if(cuotasImpagas>0)condicion=`❌ ${cuotasImpagas} cuota${cuotasImpagas>1?'s':''} impaga${cuotasImpagas>1?'s':''}`;
+
+  const montoOriginal=Math.round(p.monto*(1+(p.plan==='20'?.25:.40)));
+  const importeRecargo=p.total-montoOriginal;
+
+  let msg='';
+  if(destino==='cobrador'){
+    msg=`*CREDIDEY — Estado de cliente*\n\n`;
+    msg+=`Cliente: *${c.nombre}*\n`;
+    msg+=`Tel: ${c.tel||'—'}\n`;
+    msg+=`Dir: ${c.dir||'—'}${c.loc?' ('+c.loc+')':''}\n\n`;
+  } else {
+    msg=`*CREDIDEY — Estado de cuenta*\n\n`;
+    msg+=`Cliente: *${c.nombre}*\n`;
+  }
+  msg+=`Plan: ${p.plan} días (+${p.plan==='20'?'25':'40'}%)\n`;
+  msg+=`Cuota diaria: *${fmt(p.cuota)}*\n\n`;
+  msg+=`📋 *CUOTAS*\n`;
+  msg+=`• Va por la cuota: #${nr} de ${p.cuotas}\n`;
+  msg+=`• Pagas: ${cuotasPagas} de ${p.cuotas}\n`;
+  msg+=`• Impagas: ${cuotasImpagas}\n`;
+  msg+=`• Faltan pagar: ${cuotasRestantes} cuota${cuotasRestantes!==1?'s':''}\n\n`;
+  msg+=`📊 *CONDICIÓN: ${condicion}*\n`;
+  msg+=`💰 *Saldo restante: ${fmt(Math.max(0,p.total-abonado))}*\n\n`;
+  if(importeRecargo>0){
+    msg+=`⚠ Recargo aplicado: *${fmt(importeRecargo)}*\n`;
+    if(recargos.length){recargos.forEach(r=>{if(r.nota)msg+=`   - ${r.nota}\n`;});}
+    msg+=`\n`;
+  }
+  msg+=`_CrediDey_`;
+
+  let tel='';
+  if(destino==='cobrador'&&c.cobrador_id){
+    const cob=(await GET('cobradores',`?id=eq.${c.cobrador_id}`))[0];
+    tel=(cob?.numero||'').toString().replace(/\D/g,'');
+    // El número del cobrador está en el campo 'numero' que es su interno, necesitamos el tel
+    tel=(cob?.tel||'').replace(/\D/g,'');
+  } else {
+    tel=(c.tel||'').replace(/\D/g,'');
+  }
+  window.open(tel?`https://wa.me/54${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════
+// COBROS DEL DÍA
+// ══════════════════════════════════════════════
+PAGES.cobros=async function(cobId){
+  try{
+    const hoy=today();
+    if(new Date().getDay()===0){
+      document.getElementById('content').innerHTML='<div class="card"><div class="empty">🎉 Hoy es domingo — no se cobra.</div></div>';
+      return;
+    }
+    const cobs=await GET('cobradores','?order=numero.asc');
+    const cobSelId=cobId||(cobs[0]?.id||'');
+    if(!cobs.length){
+      document.getElementById('content').innerHTML='<div class="card"><div class="empty">Primero agregá un cobrador.</div></div>';
+      return;
+    }
+    const clis=await GET('clientes',`?cobrador_id=eq.${cobSelId}`);
+    const cliIds=clis.map(c=>c.id);
+    const prest=cliIds.length?await GET('prestamos',`?estado=eq.Activo&cliente_id=in.(${cliIds.join(',')})`):[]; 
+    const prestIds=prest.map(p=>p.id);
+    const pagos=prestIds.length?await GET('pagos',`?prestamo_id=in.(${prestIds.join(',')})`):[]; 
+    const pagosHoy=pagos.filter(p=>p.fecha===hoy);
+
+    const items=prest.map(p=>{
+      const c=clis.find(x=>x.id===p.cliente_id)||{};
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const nroCuota=dias.filter(d=>d<=hoy).length;
+      const cobHoy=pagosHoy.filter(x=>x.prestamo_id===p.id).reduce((a,x)=>a+x.importe,0);
+      const abonado=pagos.filter(x=>x.prestamo_id===p.id).reduce((a,x)=>a+x.importe,0);
+      const saldo=Math.max(0,p.total-abonado);
+      const pas=dias.filter(d=>d<hoy).length;
+      const atraso=Math.max(0,pas*p.cuota-abonado);
+      return{...p,cliente:c,nroCuota,cobHoy,saldo,atraso};
+    });
+
+    const totalHoy=pagosHoy.reduce((a,p)=>a+p.importe,0);
+
+    document.getElementById('content').innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">Cobros del día — ${fmtD(hoy)}</div>
+      <div class="field" style="max-width:320px;margin-bottom:12px">
+        <label>Cobrador</label>
+        <select onchange="PAGES.cobros(this.value)">
+          ${cobs.map(c=>`<option value="${c.id}"${c.id===cobSelId?' selected':''}>#${c.numero} ${c.nombre} — ${c.zona||''}</option>`).join('')}
+        </select>
+      </div>
+      <div class="g3">
+        <div class="stat"><div class="st-l">Total cobrado hoy</div><div class="st-v" style="color:var(--green)">${fmt(totalHoy)}</div></div>
+        <div class="stat"><div class="st-l">Este cobrador</div><div class="st-v" style="color:var(--accent)">${fmt(items.reduce((a,x)=>a+x.cobHoy,0))}</div></div>
+        <div class="stat"><div class="st-l">Con atraso</div><div class="st-v" style="color:var(--red)">${items.filter(x=>x.atraso>0).length}</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        Lista de cobros — ingresá los importes
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-g btn-sm" onclick="completarTodos('${cobSelId}')">✓ Todos</button>
+          <button class="btn btn-p btn-sm" onclick="guardarTodos('${cobSelId}')">💾 Guardar</button>
+        </div>
+      </div>
+      ${items.length===0?'<div class="empty">No hay clientes activos para este cobrador</div>':`
+      <div class="twrap"><table>
+        <thead><tr><th>#</th><th>Cliente</th><th>Cuota #</th><th>Valor</th><th>Atraso</th><th>Importe hoy</th><th>Estado</th></tr></thead>
+        <tbody>
+          ${items.map((p,i)=>{
+            const ok=p.cobHoy>=p.cuota;
+            const parc=p.cobHoy>0&&p.cobHoy<p.cuota;
+            return`<tr style="background:${p.atraso>0&&!ok?'#fff8f8':ok?'#f0fdf4':''}">
+              <td class="mono" style="color:var(--muted)">${i+1}</td>
+              <td><b>${p.cliente.nombre||'—'}</b><div style="font-size:10px;color:var(--muted)">${p.cliente.tel||''}</div></td>
+              <td class="mono" style="text-align:center">${p.nroCuota}/${p.cuotas}</td>
+              <td style="font-weight:600">${fmt(p.cuota)}</td>
+              <td style="color:${p.atraso>0?'var(--red)':'var(--green)'}">${p.atraso>0?'⚠ '+fmt(p.atraso):'✓'}</td>
+              <td>
+                <div style="display:flex;gap:5px;align-items:center">
+                  <input type="number" id="cobro-${p.id}" value="${p.cobHoy||''}" placeholder="${p.cuota}"
+                    style="width:100px;text-align:right;font-weight:600;${ok?'border-color:#86efac;background:#f0fdf4':p.atraso>0&&!p.cobHoy?'border-color:#fca5a5;background:#fff8f8':''}"
+                    oninput="updFila('${p.id}',this.value,${p.cuota})"/>
+                  <button onclick="document.getElementById('cobro-${p.id}').value=${p.cuota};updFila('${p.id}',${p.cuota},${p.cuota})" style="background:var(--dim);border:1px solid var(--border);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:11px">✓</button>
+                  <button onclick="document.getElementById('cobro-${p.id}').value=0;updFila('${p.id}',0,${p.cuota})" style="background:#fee2e2;border:1px solid #fca5a5;border-radius:5px;padding:3px 7px;cursor:pointer;font-size:11px;color:var(--red)">✗</button>
+                </div>
+              </td>
+              <td id="est-${p.id}" style="font-size:12px;font-weight:600;color:${ok?'var(--green)':parc?'var(--yellow)':'var(--muted)'}">${ok?'✓ Cobrado':parc?'~ Parcial':'Pendiente'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="background:#f0fdf4">
+            <td colspan="5" style="text-align:right;padding:9px 11px;font-weight:600">TOTAL A COBRAR:</td>
+            <td style="color:var(--green);font-weight:700;font-size:14px;padding:9px 11px">${fmt(items.reduce((a,x)=>a+x.cuota,0))}</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table></div>
+      <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="guardarTodos('${cobSelId}')">💾 Guardar todos los cobros</button>
+        <button class="btn btn-s" onclick="previstaListaCobros('${cobSelId}')">👁 Vista previa</button>
+        <button class="btn btn-w" onclick="listaWA('${cobSelId}')">📱 Enviar lista por WhatsApp</button>
+      </div>`}
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+function updFila(pid,val,cuota){
+  const v=parseFloat(val)||0;
+  const est=document.getElementById('est-'+pid);
+  if(!est)return;
+  est.textContent=v>=cuota&&cuota>0?'✓ Cobrado':v>0?'~ Parcial':'Pendiente';
+  est.style.color=v>=cuota&&cuota>0?'var(--green)':v>0?'var(--yellow)':'var(--muted)';
+}
+
+async function completarTodos(cobId){
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const cliIds=clis.map(c=>c.id);
+  if(!cliIds.length)return;
+  const prest=await GET('prestamos',`?estado=eq.Activo&cliente_id=in.(${cliIds.join(',')})`);
+  prest.forEach(p=>{
+    const inp=document.getElementById('cobro-'+p.id);
+    if(inp){inp.value=p.cuota;updFila(p.id,p.cuota,p.cuota);}
+  });
+}
+
+async function guardarTodos(cobId){
+  const hoy=today();
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const cliIds=clis.map(c=>c.id);
+  if(!cliIds.length){alert('Sin clientes');return;}
+  const prest=await GET('prestamos',`?estado=eq.Activo&cliente_id=in.(${cliIds.join(',')})`);
+  
+  let guardados=0;
+  for(const p of prest){
+    const inp=document.getElementById('cobro-'+p.id);
+    if(!inp)continue;
+    const importe=parseFloat(inp.value)||0;
+    if(importe<=0)continue;
+    // Borrar pago de hoy si existe
+    const pagHoy=await GET('pagos',`?prestamo_id=eq.${p.id}&fecha=eq.${hoy}&tipo=neq.Recargo`);
+    for(const pg of pagHoy)await DEL('pagos',`?id=eq.${pg.id}`);
+    // Guardar nuevo
+    const tipo=importe>=p.cuota?'Normal':'Parcial';
+    await POST('pagos',{id:uid(),prestamo_id:p.id,importe,fecha:hoy,tipo});
+    guardados++;
+    // Verificar si terminó
+    const todos=await GET('pagos',`?prestamo_id=eq.${p.id}`);
+    const ab=todos.reduce((a,x)=>a+x.importe,0);
+    if(ab>=p.total)await PATCH('prestamos',`?id=eq.${p.id}`,{estado:'Finalizado'});
+  }
+  alert(`✓ ${guardados} cobros guardados`);
+  PAGES.cobros(cobId);
+}
+
+async function previstaListaCobros(cobId){
+  const cob=(await GET('cobradores',`?id=eq.${cobId}`))[0];
+  const hoy=today();
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const cliIds=clis.map(c=>c.id);
+  if(!cliIds.length){alert('Sin clientes');return;}
+  const prest=await GET('prestamos',`?estado=eq.Activo&cliente_id=in.(${cliIds.join(',')})`);
+  const pagos=prest.length?await GET('pagos',`?prestamo_id=in.(${prest.map(p=>p.id).join(',')})`):[]; 
+
+  let msg=`*CREDIDEY — Ruta del día*\nCobrador: *${cob.nombre}*\nFecha: ${fmtD(hoy)}\n\n`;
+  prest.forEach((p,i)=>{
+    const c=clis.find(x=>x.id===p.cliente_id)||{};
+    const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+    const nr=dias.filter(d=>d<=hoy).length;
+    const ab=pagos.filter(x=>x.prestamo_id===p.id).reduce((a,x)=>a+x.importe,0);
+    const saldo=Math.max(0,p.total-ab);
+    msg+=`${i+1}. *${c.nombre}*\n   Cuota #${nr}/${p.cuotas} — ${fmt(p.cuota)}\n   Saldo: ${fmt(saldo)}\n\n`;
+  });
+  msg+=`Total a cobrar: *${fmt(prest.reduce((a,p)=>a+p.cuota,0))}*\n_CrediDey_`;
+
+  openM(`👁 Vista previa — Lista de cobros ${cob.nombre}`,`
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+      Así va a ver el mensaje <b>${cob.nombre}</b> en WhatsApp — ${prest.length} clientes:
+    </div>
+    <div style="background:#dcfce7;border-radius:12px;padding:14px;font-size:13px;line-height:1.8;white-space:pre-wrap;font-family:'DM Sans',sans-serif;border:1px solid #86efac;max-height:400px;overflow-y:auto">${msg}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-w" onclick="closeM();listaWA('${cobId}')">📱 Enviar por WhatsApp</button>
+      <button class="btn btn-s" onclick="closeM()">Cerrar</button>
+    </div>
+  `);
+}
+
+async function listaWA(cobId){
+  const cob=(await GET('cobradores',`?id=eq.${cobId}`))[0];
+  const hoy=today();
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const cliIds=clis.map(c=>c.id);
+  if(!cliIds.length)return;
+  const prest=await GET('prestamos',`?estado=eq.Activo&cliente_id=in.(${cliIds.join(',')})`);
+  const pagos=prest.length?await GET('pagos',`?prestamo_id=in.(${prest.map(p=>p.id).join(',')})`):[]; 
+
+  let msg=`*CREDIDEY — Ruta del día*\nCobrador: *${cob.nombre}*\nFecha: ${fmtD(hoy)}\n\n`;
+  prest.forEach((p,i)=>{
+    const c=clis.find(x=>x.id===p.cliente_id)||{};
+    const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+    const nr=dias.filter(d=>d<=hoy).length;
+    const ab=pagos.filter(x=>x.prestamo_id===p.id).reduce((a,x)=>a+x.importe,0);
+    const saldo=Math.max(0,p.total-ab);
+    msg+=`${i+1}. *${c.nombre}*\n   Cuota #${nr}/${p.cuotas} — ${fmt(p.cuota)}\n   Saldo: ${fmt(saldo)}\n\n`;
+  });
+  msg+=`Total a cobrar: *${fmt(prest.reduce((a,p)=>a+p.cuota,0))}*\n_CrediDey_`;
+  const tel=(cob.tel||'').replace(/\D/g,'');
+  window.open(tel?`https://wa.me/54${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════
+// RESUMEN SEMANAL
+// ══════════════════════════════════════════════
+PAGES.semana=async function(){
+  try{
+    const hoy=today();
+    const lunes=lunesSemana();
+    const sabado=(()=>{const d=new Date(lunes+'T12:00:00');d.setDate(d.getDate()+5);return d.toISOString().slice(0,10);})();
+    const[cobs,clis,prest,pagos]=await Promise.all([
+      GET('cobradores','?order=numero.asc'),
+      GET('clientes','?select=id,cobrador_id'),
+      GET('prestamos','?estado=eq.Activo&select=id,cliente_id,cuota,cuotas,fecha_inicio'),
+      GET('pagos',`?fecha=gte.${lunes}&fecha=lte.${sabado}&tipo=neq.Recargo`),
+    ]);
+
+    const totalSem=pagos.reduce((a,p)=>a+p.importe,0);
+
+    const resCob=cobs.map(cob=>{
+      const misClis=clis.filter(c=>c.cobrador_id===cob.id).map(c=>c.id);
+      const misP=prest.filter(p=>misClis.includes(p.cliente_id)).map(p=>p.id);
+      const misPagos=pagos.filter(p=>misP.includes(p.prestamo_id));
+      const total=misPagos.reduce((a,p)=>a+p.importe,0);
+      return{...cob,total,comision:Math.round(total*.08),cobros:misPagos.length};
+    });
+
+    const diasSem=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
+    const resDia=diasSem.map((nom,i)=>{
+      const d=new Date(lunes+'T12:00:00');d.setDate(d.getDate()+i);
+      const ds=d.toISOString().slice(0,10);
+      return{nom,fecha:ds,total:pagos.filter(p=>p.fecha===ds).reduce((a,p)=>a+p.importe,0)};
+    });
+
+    document.getElementById('content').innerHTML=`
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">Semana ${fmtD(lunes)} al ${fmtD(sabado)}</div>
+      <div class="g3">
+        <div class="stat"><div class="st-l">Total semana</div><div class="st-v" style="color:var(--green)">${fmt(totalSem)}</div></div>
+        <div class="stat"><div class="st-l">Comisiones totales</div><div class="st-v" style="color:var(--orange)">${fmt(Math.round(totalSem*.08))}</div></div>
+        <div class="stat"><div class="st-l">Cobros registrados</div><div class="st-v" style="color:var(--accent)">${pagos.length}</div></div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-bottom:12px">
+      <div class="card-title">Comisiones por cobrador (8%)</div>
+      <div class="twrap"><table>
+        <thead><tr><th>N°</th><th>Cobrador</th><th>Cobros</th><th>Recaudado</th><th>Comisión 8%</th><th></th></tr></thead>
+        <tbody>
+          ${resCob.map(c=>`<tr>
+            <td class="mono" style="color:var(--accent)">#${c.numero}</td>
+            <td><b>${c.nombre}</b></td>
+            <td class="mono">${c.cobros}</td>
+            <td>${fmt(c.total)}</td>
+            <td style="color:var(--green);font-weight:700">${fmt(c.comision)}</td>
+            <td><button class="btn btn-sm btn-w" onclick="reporteWA('${c.id}')">📱 WA</button></td>
+          </tr>`).join('')}
+        </tbody>
+      </table></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Recaudación por día</div>
+      <div class="twrap"><table>
+        <thead><tr><th>Día</th><th>Fecha</th><th>Recaudado</th></tr></thead>
+        <tbody>
+          ${resDia.map(d=>`<tr style="${d.fecha===hoy?'background:#eff6ff':''}">
+            <td><b>${d.nom}</b>${d.fecha===hoy?' ← hoy':''}</td>
+            <td class="mono">${fmtD(d.fecha)}</td>
+            <td style="color:${d.total>0?'var(--green)':'var(--muted)'};font-weight:${d.total>0?700:400}">${d.total>0?fmt(d.total):'—'}</td>
+          </tr>`).join('')}
+          <tr style="background:#f0fdf4;font-weight:700">
+            <td colspan="2" style="text-align:right;padding:9px 11px">TOTAL</td>
+            <td style="color:var(--green);padding:9px 11px">${fmt(totalSem)}</td>
+          </tr>
+        </tbody>
+      </table></div>
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+// ══════════════════════════════════════════════
+// EDITAR / ELIMINAR PAGOS
+// ══════════════════════════════════════════════
+async function editarPago(pagoId,prestId,cliId){
+  const[pg,p]=await Promise.all([
+    GET('pagos',`?id=eq.${pagoId}`).then(r=>r[0]),
+    GET('prestamos',`?id=eq.${prestId}`).then(r=>r[0])
+  ]);
+  if(!pg){alert('No se encontró el pago');return;}
+  const fechaPago=pg.fecha||'';
+  openM('Editar pago',`
+    <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">
+      Pago original: <b>${fmtD(fechaPago)}</b> · <b>${pg.tipo==='Gracia'?'Día de gracia':fmt(pg.importe||0)}</b> · ${pg.tipo||'Normal'}
+    </div>
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">
+      ⚠ Modificar este pago recalcula el saldo y el estado del préstamo.
+    </div>
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input id="ep2-fecha" type="date" value="${fechaPago}"/></div>
+      <div class="field"><label>Importe ($)</label><input id="ep2-imp" type="number" value="${pg.importe||0}"/></div>
+    </div>
+    <div class="field"><label>Tipo</label>
+      <select id="ep2-tipo">
+        <option value="Normal"${pg.tipo==='Normal'?' selected':''}>Normal</option>
+        <option value="Parcial"${pg.tipo==='Parcial'?' selected':''}>Parcial</option>
+        <option value="Gracia"${pg.tipo==='Gracia'?' selected':''}>Día de gracia</option>
+        <option value="Saldo inicial"${pg.tipo==='Saldo inicial'?' selected':''}>Saldo inicial</option>
+        <option value="Recargo"${pg.tipo==='Recargo'?' selected':''}>Recargo</option>
+      </select>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-p" onclick="guardarEditPago('${pagoId}','${prestId}','${cliId}')">Guardar</button>
+      <button class="btn btn-s" onclick="verCli('${cliId}')">Cancelar</button>
+    </div>
+  `);
+}
+
+async function guardarEditPago(pagoId,prestId,cliId){
+  const fecha=document.getElementById('ep2-fecha').value;
+  const importe=parseFloat(document.getElementById('ep2-imp').value||0);
+  const tipo=document.getElementById('ep2-tipo').value;
+  try{
+    await PATCH('pagos',`?id=eq.${pagoId}`,{fecha,importe,tipo});
+    // Recalcular si el préstamo debe seguir Activo o Finalizado
+    const pagosP=await GET('pagos',`?prestamo_id=eq.${prestId}`);
+    const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+    const abonado=pagosP.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+    const nuevoEstado=abonado>=p.total?'Finalizado':'Activo';
+    await PATCH('prestamos',`?id=eq.${prestId}`,{estado:nuevoEstado});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function eliminarPago(pagoId,prestId,cliId){
+  if(!confirm('¿Eliminar este pago? El saldo se recalculará.'))return;
+  try{
+    await DEL('pagos',`?id=eq.${pagoId}`);
+    // Recalcular estado del préstamo
+    const pagosP=await GET('pagos',`?prestamo_id=eq.${prestId}`);
+    const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+    const abonado=pagosP.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+    const nuevoEstado=abonado>=p.total?'Finalizado':'Activo';
+    await PATCH('prestamos',`?id=eq.${prestId}`,{estado:nuevoEstado});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════
+// PDF CONTRATO
+// ══════════════════════════════════════════════
+function imprimirContrato(){
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8"/>
+  <title>Contrato CrediDey</title>
+  <style>
+    @page{size:A4;margin:20mm;}
+    body{font-family:Arial,sans-serif;font-size:12px;line-height:1.7;color:#000;}
+    h1{font-size:20px;text-align:center;margin-bottom:2px;letter-spacing:2px;}
+    h2{font-size:13px;text-align:center;margin-bottom:16px;font-weight:600;letter-spacing:1px;}
+    .bloque{border:1px solid #ccc;border-radius:4px;padding:10px;margin-bottom:12px;}
+    .linea{border-bottom:1px solid #999;margin-bottom:8px;padding-bottom:2px;}
+    ol{padding-left:18px;margin-bottom:12px;}
+    li{margin-bottom:4px;}
+    .firmas{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:16px;}
+    .firma-bloque div{border-bottom:1px solid #000;margin-bottom:6px;padding-bottom:2px;}
+    @media print{button{display:none;}}
+  </style>
+  </head><body>
+  <button onclick="window.print()" style="margin-bottom:16px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px">🖨 Imprimir / Guardar PDF</button>
+  <h1>CREDIDEY</h1>
+  <h2>COMPROMISO DE PAGO Y ADHESIÓN</h2>
+  <p>En la ciudad de ________________________________, a los _____ días del mes de ________________________ de ______</p>
+  <p style="margin-bottom:8px">quien suscribe:</p>
+  <div class="bloque">
+    <div class="linea"><b>Nombre y Apellido:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="linea"><b>DNI:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <b>Teléfono:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="linea"><b>Domicilio:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="linea"><b>Nombre del Comercio/Emprendimiento:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div><b>Dirección del Comercio:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+  </div>
+  <p><b>MANIFIESTA:</b> Que ha solicitado y recibido de CREDIDEY un préstamo, comprometiéndose a reintegrarlo bajo las siguientes condiciones:</p>
+  <div class="bloque">
+    <div class="linea"><b>Monto del préstamo:</b> $ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="linea"><b>Cantidad de cuotas:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div class="linea"><b>Valor de cada cuota:</b> $ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div><b>Fecha de inicio de pago:</b> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+  </div>
+  <p><b>DECLARACIONES Y COMPROMISOS</b></p>
+  <ol>
+    <li>Declaro haber recibido el préstamo mencionado precedentemente.</li>
+    <li>Me comprometo a abonar las cuotas pactadas en tiempo y forma, respetando las fechas y horarios establecidos por CREDIDEY.</li>
+    <li>Reconozco que el incumplimiento de los pagos podrá generar recargos e intereses previamente informados.</li>
+    <li>Mantendré actualizados mis datos personales, domicilio y teléfono de contacto.</li>
+    <li>Autorizo a CREDIDEY a realizar comunicaciones y gestiones de cobranza dentro de la normativa vigente.</li>
+    <li>Declaro que los datos consignados son verdaderos.</li>
+    <li>Manifiesto haber leído, comprendido y aceptado voluntariamente todas las condiciones aquí establecidas.</li>
+  </ol>
+  <p><b>Documentación adjunta:</b> &nbsp; ■ Copia de DNI &nbsp;&nbsp; ■ Factura de servicio &nbsp;&nbsp; ■ Foto del comercio</p>
+  <div class="firmas">
+    <div class="firma-bloque">
+      <div>Firma del Cliente: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div>Aclaración: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div>DNI: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+    <div class="firma-bloque">
+      <div>Firma por CREDIDEY: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div>Aclaración: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div>Fecha: &nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp; / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    </div>
+  </div>
+  </body></html>`);
+  win.document.close();
+}
+// ══════════════════════════════════════════════
+// ══════════════════════════════════════════════
+// LINK COBRADOR
+// ══════════════════════════════════════════════
+function linkCobrador(cobId,cobNumero,cobNombre,cobTel){
+  const pin=String(cobNumero).slice(-4).padStart(4,'0');
+  const baseUrl=window.location.href.replace(/\/[^/]*$|[?#].*$/,'').replace('credidey-v2','cobrador').replace(/credidey-v2.*$/,'cobrador.html');
+  const link=`${baseUrl}?c=${cobId}&pin=${pin}`;
+  openM(`🔗 Link de cobros — ${cobNombre}`,`
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px">
+      Compartí este link con <b>${cobNombre}</b> para que registre sus cobros del día.
+    </div>
+    <div style="background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:12px;font-family:'DM Mono',monospace;font-size:11px;word-break:break-all">${link}</div>
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">
+      🔐 PIN del cobrador: <b style="font-size:16px;letter-spacing:3px">${pin}</b><br>
+      <span style="font-size:11px;color:var(--muted)">Son los últimos 4 dígitos de su número (#${cobNumero})</span>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-p" onclick="navigator.clipboard.writeText('${link}');this.textContent='✓ Copiado!'">📋 Copiar link</button>
+      ${cobTel?`<button class="btn btn-w" onclick="window.open('https://wa.me/54${cobTel.replace(/\D/g,'')}?text=${encodeURIComponent('Hola '+cobNombre+'! Tu link de cobros CrediDey: '+link+' PIN: '+pin)}','_blank')">📱 Enviar por WA</button>`:''}
+      <button class="btn btn-s" onclick="closeM()">Cerrar</button>
+    </div>
+  `);
+}
+
+// ══════════════════════════════════════════════
+// APROBACIONES
+// ══════════════════════════════════════════════
+PAGES.aprobaciones=async function(){
+  try{
+    const hoy=today();
+    const pendientes=await GET('cobros_pendientes',`?estado=eq.enviado&order=created_at.desc`);
+    const cobs=await GET('cobradores','?select=id,numero,nombre');
+    const prest=await GET('prestamos','?estado=eq.Activo&select=id,cliente_id,cuota,cuotas,fecha_inicio,plan');
+    const clis=await GET('clientes','?select=id,nombre,tel');
+
+    if(!pendientes.length){
+      document.getElementById('content').innerHTML=`
+      <div class="card">
+        <div class="card-title">✅ Aprobaciones</div>
+        <div class="empty">No hay planillas pendientes de aprobación.</div>
+      </div>`;
+      return;
+    }
+
+    let html=`<div class="card"><div class="card-title">✅ Aprobaciones pendientes (${pendientes.length})</div>`;
+
+    for(const plan of pendientes){
+      const cob=cobs.find(c=>c.id===plan.cobrador_id);
+      const items=plan.items||{};
+      const prestIds=Object.keys(items);
+      let efectivo=0,transferencia=0,transfCobrador=0,totalItems=0;
+      const filas=[];
+
+      prestIds.forEach(pid=>{
+        const item=items[pid];
+        const p=prest.find(x=>x.id===pid);
+        const cli=p?clis.find(c=>c.id===p.cliente_id):null;
+        if(!p||!cli)return;
+        const monto=item.tipo==='pago'?p.cuota:(item.monto||0);
+        if(item.tipo!=='nopago'&&item.tipo!=='gracia'){
+          totalItems+=monto;
+          if(item.medio==='efectivo')efectivo+=monto;
+          else if(item.medio==='transferencia')transferencia+=monto;
+          else if(item.medio==='transfcobrador')transfCobrador+=monto;
+        }
+        filas.push({pid,cli,p,item,monto});
+      });
+
+      html+=`
+      <div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
+          <div>
+            <div style="font-weight:700;font-size:14px">#${cob?.numero} ${cob?.nombre||'—'}</div>
+            <div style="font-size:11px;color:var(--muted)">${fmtD(plan.fecha)} · ${filas.length} clientes</div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn btn-p btn-sm" onclick="aprobarPlanilla('${plan.id}')">✓ Aprobar todo</button>
+            <button class="btn btn-r btn-sm" onclick="rechazarPlanilla('${plan.id}','${cob?.id}','${cob?.tel||''}')">✗ Rechazar</button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+          <div style="background:#fef3c7;border-radius:8px;padding:8px;text-align:center;font-size:11px"><div style="color:#92400e;font-weight:700">💵 Efectivo</div><div style="font-weight:800;color:#92400e">${fmt(efectivo)}</div></div>
+          <div style="background:#dbeafe;border-radius:8px;padding:8px;text-align:center;font-size:11px"><div style="color:#1e40af;font-weight:700">🏦 Transfer.</div><div style="font-weight:800;color:#1e40af">${fmt(transferencia)}</div></div>
+          <div style="background:#ede9fe;border-radius:8px;padding:8px;text-align:center;font-size:11px"><div style="color:#6d28d9;font-weight:700">📲 Cob.</div><div style="font-weight:800;color:#6d28d9">${fmt(transfCobrador)}</div></div>
+        </div>
+        <div class="twrap"><table>
+          <thead><tr><th>Cliente</th><th>Estado</th><th>Medio</th><th>Monto</th></tr></thead>
+          <tbody>${filas.map(f=>{
+            const medioLabel=f.item.medio==='efectivo'?'💵 Efectivo':f.item.medio==='transferencia'?'🏦 Transfer. cliente':f.item.medio==='transfcobrador'?'📲 Transfer. cobrador':'—';
+            const tipoColor=f.item.tipo==='pago'?'var(--green)':f.item.tipo==='nopago'?'var(--red)':f.item.tipo==='parcial'?'var(--yellow)':'var(--cyan)';
+            const tipoLabel=f.item.tipo==='pago'?'✓ Pagó':f.item.tipo==='nopago'?'✗ No pagó':f.item.tipo==='parcial'?'~ Parcial':'🕊 Gracia';
+            return`<tr>
+              <td><b>${f.cli.nombre}</b></td>
+              <td style="color:${tipoColor};font-weight:600">${tipoLabel}</td>
+              <td style="font-size:11px">${f.item.tipo==='nopago'||f.item.tipo==='gracia'?'—':medioLabel}</td>
+              <td style="font-weight:600">${f.item.tipo==='nopago'||f.item.tipo==='gracia'?'—':fmt(f.monto)}</td>
+            </tr>`;
+          }).join('')}</tbody>
+        </table></div>
+      </div>`;
+    }
+    html+=`</div>`;
+    document.getElementById('content').innerHTML=html;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+async function aprobarPlanilla(planId){
+  if(!confirm('¿Aprobar esta planilla y cargar todos los pagos?'))return;
+  try{
+    const plan=(await GET('cobros_pendientes',`?id=eq.${planId}`))[0];
+    const items=plan.items||{};
+    const hoy=plan.fecha||today();
+    const prest=await GET('prestamos','?select=id,cuota,total,cliente_id');
+    const pagosExist=await GET('pagos',`?fecha=eq.${hoy}`);
+
+    for(const [pid,item] of Object.entries(items)){
+      const p=prest.find(x=>x.id===pid);
+      if(!p)continue;
+      // No duplicar si ya existe
+      if(pagosExist.find(x=>x.prestamo_id===pid&&x.fecha===hoy))continue;
+
+      if(item.tipo==='pago'){
+        await POST('pagos',{id:uid(),prestamo_id:pid,importe:p.cuota,fecha:hoy,tipo:'Normal',nota:`Medio: ${item.medio||'efectivo'}`});
+      } else if(item.tipo==='parcial'&&item.monto>0){
+        await POST('pagos',{id:uid(),prestamo_id:pid,importe:item.monto,fecha:hoy,tipo:'Parcial',nota:`Medio: ${item.medio||'efectivo'}`});
+      } else if(item.tipo==='gracia'){
+        await POST('pagos',{id:uid(),prestamo_id:pid,importe:0,fecha:hoy,tipo:'Gracia',nota:'Día de gracia'});
+      }
+
+      // Verificar si se completó el préstamo
+      const pagosP=await GET('pagos',`?prestamo_id=eq.${pid}`);
+      const abonado=pagosP.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia').reduce((a,x)=>a+x.importe,0);
+      if(abonado>=p.total)await PATCH('prestamos',`?id=eq.${pid}`,{estado:'Finalizado'});
+    }
+
+    await PATCH('cobros_pendientes',`?id=eq.${planId}`,{estado:'aprobado'});
+    alert('✓ Planilla aprobada y pagos cargados correctamente.');
+    PAGES.aprobaciones();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function rechazarPlanilla(planId,cobId,cobTel){
+  const motivo=prompt('¿Por qué rechazás la planilla? (opcional)');
+  try{
+    await PATCH('cobros_pendientes',`?id=eq.${planId}`,{estado:'rechazado'});
+    if(cobTel){
+      const msg=`*CrediDey* — Tu planilla de hoy fue rechazada.${motivo?'\nMotivo: '+motivo:''}\nPor favor corregila y volvé a enviarla.`;
+      window.open(`https://wa.me/54${cobTel.replace(/\D/g,'')}?text=${encodeURIComponent(msg)}`,'_blank');
+    }
+    PAGES.aprobaciones();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════
+// GASTOS
+// ══════════════════════════════════════════════
+PAGES.gastos=async function(){
+  try{
+    const gastos=await GET('gastos','?order=fecha.desc');
+    const totalMes=gastos.filter(g=>{
+      const d=new Date();
+      return g.fecha>=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-01`;
+    }).reduce((a,g)=>a+g.importe,0);
+
+    document.getElementById('content').innerHTML=`
+    <div class="card">
+      <div class="card-title">💸 Gastos
+        <div style="display:flex;gap:8px;align-items:center">
+          <div style="font-size:12px;color:var(--muted)">Este mes: <b style="color:var(--red)">${fmt(totalMes)}</b></div>
+          <button class="btn btn-p btn-sm" onclick="modalNuevoGasto()">+ Nuevo gasto</button>
+        </div>
+      </div>
+      ${gastos.length?`
+      <div class="twrap"><table>
+        <thead><tr><th>Fecha</th><th>Concepto</th><th>Categoría</th><th>Importe</th><th></th></tr></thead>
+        <tbody>${gastos.map(g=>`<tr>
+          <td class="mono">${fmtD(g.fecha)}</td>
+          <td><b>${g.concepto}</b>${g.nota?`<div style="font-size:11px;color:var(--muted)">${g.nota}</div>`:''}</td>
+          <td>${badge(g.categoria||'Otro','#64748b')}</td>
+          <td style="color:var(--red);font-weight:700">${fmt(g.importe)}</td>
+          <td><button class="btn btn-sm btn-r" onclick="eliminarGasto('${g.id}')">🗑</button></td>
+        </tr>`).join('')}</tbody>
+      </table></div>`:'<div class="empty">No hay gastos registrados.</div>'}
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+function modalNuevoGasto(){
+  openM('Nuevo gasto',`
+    <div class="g2">
+      <div class="field"><label>Fecha</label><input id="ng-fecha" type="date" value="${today()}"/></div>
+      <div class="field"><label>Importe ($)</label><input id="ng-imp" type="number" placeholder="0"/></div>
+    </div>
+    <div class="field"><label>Concepto</label><input id="ng-concepto" placeholder="Ej: Alquiler oficina"/></div>
+    <div class="field"><label>Categoría</label>
+      <select id="ng-cat">
+        <option value="Alquiler">Alquiler</option>
+        <option value="Servicios">Servicios</option>
+        <option value="Sueldos">Sueldos</option>
+        <option value="Combustible">Combustible</option>
+        <option value="Papelería">Papelería</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="field"><label>Nota (opcional)</label><input id="ng-nota" placeholder="Detalle adicional"/></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="guardarGasto()">Guardar</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+async function guardarGasto(){
+  const concepto=document.getElementById('ng-concepto').value.trim();
+  const importe=parseFloat(document.getElementById('ng-imp').value||0);
+  const fecha=document.getElementById('ng-fecha').value;
+  if(!concepto||!importe||!fecha){alert('Completá todos los campos');return;}
+  try{
+    await POST('gastos',{id:uid(),concepto,importe,fecha,categoria:document.getElementById('ng-cat').value,nota:document.getElementById('ng-nota').value});
+    closeM();PAGES.gastos();
+  }catch(e){alert('Error: '+e.message);}
+}
+
+async function eliminarGasto(id){
+  if(!confirm('¿Eliminar este gasto?'))return;
+  try{await DEL('gastos',`?id=eq.${id}`);PAGES.gastos();}
+  catch(e){alert('Error: '+e.message);}
+}
+// ══════════════════════════════════════════════
+async function planillaWA(cobId,cobNombre,cobTel){
+  const hoy=new Date();
+  const manana=new Date(hoy);
+  manana.setDate(manana.getDate()+1);
+  while(manana.getDay()===0)manana.setDate(manana.getDate()+1);
+  const fechaManana=manana.toISOString().slice(0,10);
+  const fechaLeg=`${String(manana.getDate()).padStart(2,'0')}/${String(manana.getMonth()+1).padStart(2,'0')}/${manana.getFullYear()}`;
+
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const prest=await GET('prestamos','?estado=eq.Activo');
+  const pagos=await GET('pagos','?select=prestamo_id,importe,tipo,fecha');
+
+  const filas=[];
+  for(const c of clis){
+    const activos=prest.filter(x=>x.cliente_id===c.id);
+    for(const p of activos){
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const nroCuota=dias.indexOf(fechaManana);
+      if(nroCuota===-1)continue;
+      const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+      const abonado=pagosP.reduce((a,x)=>a+x.importe,0);
+      const saldoAntes=Math.max(0,p.total-abonado);
+      filas.push({nombre:c.nombre,tel:c.tel||'',dir:(c.dir||'')+(c.loc?' ('+c.loc+')':''),nroCuota:nroCuota+1,totalCuotas:p.cuotas,cuota:p.cuota,saldoAntes,paralela:activos.length>1});
+    }
+  }
+
+  if(!filas.length){alert(`${cobNombre} no tiene clientes con cuota para mañana (${fechaLeg})`);return;}
+
+  const filaHTML=filas.map((f,i)=>`
+    <tr>
+      <td style="padding:8px 6px;border:1px solid #ccc;font-weight:700">${i+1}</td>
+      <td style="padding:8px 6px;border:1px solid #ccc">
+        <b>${f.nombre}</b>${f.paralela?'<span style="background:#7c3aed;color:#fff;border-radius:3px;padding:1px 5px;font-size:9px;margin-left:5px">PARALELA</span>':''}
+        <div style="font-size:10px;color:#666">${f.tel} · ${f.dir}</div>
+      </td>
+      <td style="padding:8px 6px;border:1px solid #ccc;text-align:center;white-space:nowrap">Cuota <b>${f.nroCuota}</b> / ${f.totalCuotas}</td>
+      <td style="padding:8px 6px;border:1px solid #ccc;text-align:right;font-weight:700;white-space:nowrap">$${f.cuota.toLocaleString('es-AR')}</td>
+      <td style="padding:8px 6px;border:1px solid #ccc;text-align:right;color:#b45309;white-space:nowrap">$${f.saldoAntes.toLocaleString('es-AR')}</td>
+      <td style="padding:8px 6px;border:1px solid #ccc;min-width:120px"><input type="number" placeholder="0" style="width:100%;border:1px solid #999;border-radius:4px;padding:4px 6px;font-size:13px"/></td>
+      <td style="padding:8px 6px;border:1px solid #ccc;min-width:80px"><input type="text" placeholder=" " style="width:100%;border:1px solid #999;border-radius:4px;padding:4px 6px;font-size:13px"/></td>
+    </tr>`).join('');
+
+  const win=window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html lang="es"><head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Planilla ${fechaLeg} — ${cobNombre}</title>
+  <style>
+    @page{size:A4;margin:12mm;}
+    *{box-sizing:border-box;}
+    body{font-family:Arial,sans-serif;font-size:12px;color:#000;margin:0;padding:12px;}
+    h1{font-size:18px;margin:0 0 2px;letter-spacing:1px;}
+    h2{font-size:12px;font-weight:400;margin:0 0 12px;color:#444;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;}
+    thead tr{background:#1e293b;color:#fff;}
+    thead th{padding:8px 6px;text-align:left;font-size:11px;border:1px solid #1e293b;}
+    tbody tr:nth-child(even){background:#f8fafc;}
+    tfoot td{padding:8px 6px;font-weight:700;border-top:2px solid #000;}
+    .badge{display:inline-block;background:#7c3aed;color:#fff;border-radius:3px;padding:1px 5px;font-size:9px;margin-left:4px;}
+    .btn{padding:7px 16px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;margin-right:8px;}
+    .btn-g{background:#16a34a;}
+    @media print{.noprint{display:none!important;}input{border:none!important;background:transparent!important;}}
+  </style>
+  </head><body>
+  <div class="noprint" style="margin-bottom:14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+    <button class="btn" onclick="window.print()">🖨 Imprimir / Guardar PDF</button>
+    <span style="font-size:11px;color:#666">También podés completar los campos y luego imprimir.</span>
+  </div>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+    <div>
+      <h1>CREDIDEY</h1>
+      <h2>Planilla de cobros · ${fechaLeg}</h2>
+    </div>
+    <div style="text-align:right">
+      <div style="font-weight:700;font-size:13px">${cobNombre}</div>
+      <div style="font-size:11px;color:#666">${cobTel||''}</div>
+      <div style="font-size:11px;color:#666">Total clientes: <b>${filas.length}</b></div>
+    </div>
+  </div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Cliente</th>
+        <th>Cuota</th>
+        <th>A cobrar</th>
+        <th>Saldo anterior</th>
+        <th>Cobrado $</th>
+        <th>Obs.</th>
+      </tr>
+    </thead>
+    <tbody>${filaHTML}</tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" style="border:1px solid #ccc;padding:8px 6px">TOTAL A COBRAR</td>
+        <td style="border:1px solid #ccc;padding:8px 6px;text-align:right">$${filas.reduce((a,f)=>a+f.cuota,0).toLocaleString('es-AR')}</td>
+        <td style="border:1px solid #ccc;padding:8px 6px"></td>
+        <td style="border:1px solid #ccc;padding:8px 6px"></td>
+        <td style="border:1px solid #ccc;padding:8px 6px"></td>
+      </tr>
+    </tfoot>
+  </table>
+  <div style="margin-top:20px;display:grid;grid-template-columns:1fr 1fr;gap:20px">
+    <div style="border-top:1px solid #000;padding-top:6px">Firma cobrador: ___________________________</div>
+    <div style="border-top:1px solid #000;padding-top:6px">Total recaudado: $___________________________</div>
+  </div>
+  </body></html>`);
+  win.document.close();
+}
+
+async function guardarGracia(prestId,cliId){
+  const fecha=document.getElementById('rp-fecha').value;
+  if(!fecha){alert('Seleccioná la fecha');return;}
+  try{
+    await POST('pagos',{id:uid(),prestamo_id:prestId,importe:0,fecha,tipo:'Gracia',nota:'Día de gracia'});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════
+// EDITAR PRÉSTAMO
+// ══════════════════════════════════════════════
+async function editarPrest(prestId,cliId){
+  const p=(await GET('prestamos',`?id=eq.${prestId}`))[0];
+  const pagosExist=await GET('pagos',`?prestamo_id=eq.${prestId}&tipo=neq.Recargo&tipo=neq.Gracia&order=fecha.asc`);
+  const cuotasPagasActual=pagosExist.length;
+  openM('Editar préstamo',`
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;margin-bottom:12px;font-size:12px">
+      ⚠ Al guardar se recalcula el total y la cuota. Si cambiás las cuotas pagas, se reescriben los pagos normales (los recargos y días de gracia no se tocan).
+    </div>
+    <div class="g2">
+      <div class="field"><label>Monto prestado ($)</label><input id="ep-monto" type="number" value="${p.monto}" oninput="prevEditPrest()"/></div>
+      <div class="field"><label>Plan</label>
+        <select id="ep-plan" onchange="prevEditPrest()">
+          <option value="20"${p.plan==='20'?' selected':''}>20 días (+25%)</option>
+          <option value="28"${p.plan==='28'?' selected':''}>28 días (+40%)</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha cuota N°1</label><input id="ep-fecha" type="date" value="${p.fecha_inicio}" oninput="prevEditPrest()"/></div>
+      <div class="field"><label>Cuotas pagas (corregir si es necesario)</label><input id="ep-cpag" type="number" min="0" value="${cuotasPagasActual}" oninput="prevEditPrest()"/></div>
+    </div>
+    <div id="ep-prev" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div class="g4" style="gap:8px">
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">TOTAL</div><div id="ep-total" style="font-weight:700;color:#7c3aed">${fmt(p.total)}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">CUOTA DIARIA</div><div id="ep-cuota" style="font-weight:700;color:var(--cyan)">${fmt(p.cuota)}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">CUOTAS PAGAS</div><div id="ep-cpag-prev" style="font-weight:700;color:var(--green)">${cuotasPagasActual} / ${p.cuotas}</div></div>
+        <div><div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace">SALDO</div><div id="ep-saldo" style="font-weight:700;color:var(--orange)">${fmt(Math.max(0,p.total-cuotasPagasActual*p.cuota))}</div></div>
+      </div>
+      <div id="ep-condicion" style="margin-top:8px;border-radius:6px;padding:7px 10px;font-size:12px;font-weight:600;display:none"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-p" onclick="actualizarPrest('${prestId}','${cliId}')">Guardar cambios</button>
+      <button class="btn btn-s" onclick="closeM()">Cancelar</button>
+    </div>
+  `);
+}
+
+function prevEditPrest(){
+  const monto=parseFloat(document.getElementById('ep-monto')?.value||0);
+  const plan=document.getElementById('ep-plan')?.value;
+  const fechaVal=document.getElementById('ep-fecha')?.value;
+  const cpag=parseInt(document.getElementById('ep-cpag')?.value||0);
+  if(monto>0){
+    const{total,cuota,cuotas}=calcPlan(monto,plan);
+    document.getElementById('ep-total').textContent=fmt(total);
+    document.getElementById('ep-cuota').textContent=fmt(cuota);
+    document.getElementById('ep-cpag-prev').textContent=`${cpag} / ${cuotas}`;
+    document.getElementById('ep-saldo').textContent=fmt(Math.max(0,total-cpag*cuota));
+    // Condición según fecha
+    const cond=document.getElementById('ep-condicion');
+    if(fechaVal&&cond){
+      const hoy=today();
+      const dias=diasHabiles(fechaVal,cuotas);
+      const debidas=dias.filter(d=>d<=hoy).length;
+      if(debidas>0){
+        cond.style.display='block';
+        const diff=cpag-debidas;
+        if(diff>=0){cond.style.background='#f0fdf4';cond.style.color='var(--green)';cond.style.border='1px solid #86efac';cond.textContent=diff===0?`✓ Al día (${cpag} pagas, debía ${debidas})`:`✓ Adelantado — pagó ${cpag}, debía ${debidas}`;}
+        else{cond.style.background='#fff8f8';cond.style.color='var(--red)';cond.style.border='1px solid #fca5a5';cond.textContent=`⚠ Con atraso — pagó ${cpag}, debía ${debidas} (${Math.abs(diff)} impaga${Math.abs(diff)>1?'s':''})`;}
+      } else cond.style.display='none';
+    }
+  }
+}
+
+async function actualizarPrest(prestId,cliId){
+  const monto=parseFloat(document.getElementById('ep-monto').value||0);
+  const plan=document.getElementById('ep-plan').value;
+  const fecha=document.getElementById('ep-fecha').value;
+  const cpag=parseInt(document.getElementById('ep-cpag').value||0);
+  if(!monto||!fecha){alert('Completá todos los campos');return;}
+  try{
+    const{total,cuotas,cuota}=calcPlan(monto,plan);
+    await PATCH('prestamos',`?id=eq.${prestId}`,{monto,plan,total,cuotas,cuota,fecha_inicio:fecha});
+    // Borrar solo los pagos normales (no recargos ni gracias) y reescribir con las cuotas pagas correctas
+    await DEL('pagos',`?prestamo_id=eq.${prestId}&tipo=neq.Recargo&tipo=neq.Gracia`);
+    const dias=diasHabiles(fecha,cuotas);
+    for(let i=0;i<cpag&&i<dias.length;i++){
+      await POST('pagos',{id:uid(),prestamo_id:prestId,importe:cuota,fecha:dias[i],tipo:'Normal'});
+    }
+    // Recalcular estado
+    const nuevoEstado=cpag>=cuotas?'Finalizado':'Activo';
+    await PATCH('prestamos',`?id=eq.${prestId}`,{estado:nuevoEstado});
+    closeM();verCli(cliId);
+  }catch(e){alert('Error: '+e.message);}
+}
+
+// ══════════════════════════════════════════════
+// ANÁLISIS FINANCIERO
+// ══════════════════════════════════════════════
+PAGES.analisis=async function(periodo='mes'){
+  try{
+    const[prest,pagos,cobs,clis]=await Promise.all([
+      GET('prestamos','?order=created_at.asc'),
+      GET('pagos','?select=prestamo_id,importe,tipo,fecha&order=fecha.asc'),
+      GET('cobradores','?order=numero.asc'),
+      GET('clientes','?select=id,cobrador_id'),
+    ]);
+
+    const hoy=today();
+    const ahora=new Date();
+
+    // Filtro de período
+    let desde='';
+    if(periodo==='semana'){const d=new Date(ahora);d.setDate(d.getDate()-7);desde=d.toISOString().slice(0,10);}
+    else if(periodo==='mes'){const d=new Date(ahora);d.setDate(d.getDate()-30);desde=d.toISOString().slice(0,10);}
+    else if(periodo==='trimestre'){const d=new Date(ahora);d.setMonth(d.getMonth()-3);desde=d.toISOString().slice(0,10);}
+
+    const prestFilt=desde?prest.filter(p=>p.fecha_inicio>=desde):prest;
+    const pagosFilt=pagos.filter(p=>p.tipo!=='Recargo'&&p.tipo!=='Gracia'&&(desde?p.fecha>=desde:true));
+    const recargos=pagos.filter(p=>p.tipo==='Recargo'&&(desde?p.fecha>=desde:true));
+
+    // Totales correctos
+    const totalPrestado=prestFilt.reduce((a,p)=>a+p.monto,0);           // capital sin interés
+    const totalConInteres=prestFilt.reduce((a,p)=>a+p.total,0);          // lo que tienen que devolver
+    const interesEsperado=totalConInteres-totalPrestado;                  // ganancia esperada total
+    const totalCobrado=pagosFilt.reduce((a,p)=>a+p.importe,0);           // lo que entró
+    const totalRecargos=recargos.reduce((a,p)=>a+p.importe,0);
+
+    // Pendiente = suma de saldos restantes de todos los préstamos activos del período
+    const pendiente=prestFilt.filter(p=>p.estado==='Activo').reduce((a,p)=>{
+      const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+      const abonado=pagosP.reduce((s,x)=>s+x.importe,0);
+      return a+Math.max(0,p.total-abonado);
+    },0);
+
+    // Ganancia realizada = lo cobrado que está por encima del capital recuperado
+    // = cobrado - (capital proporcional ya recuperado)
+    // Simplificado: cobrado * (interés/total) = ganancia en lo cobrado
+    const pctInteres=totalConInteres>0?interesEsperado/totalConInteres:0;
+    const gananciaRealizada=Math.round(totalCobrado*pctInteres)+totalRecargos;
+
+    const prestActivos=prest.filter(p=>p.estado==='Activo').length;
+    const prestFinalizados=prest.filter(p=>p.estado==='Finalizado').length;
+
+    // Por cobrador
+    // Calcular semana actual sábado-viernes
+    const ahora2=new Date();
+    const diaSemana=ahora2.getDay(); // 0=dom,1=lun,...,6=sab
+    const diasDesdeSab=diaSemana===6?0:(diaSemana+1)%7; // días desde el último sábado
+    const sabado=new Date(ahora2);sabado.setDate(ahora2.getDate()-diasDesdeSab);
+    const viernes=new Date(sabado);viernes.setDate(sabado.getDate()+6);
+    const semDesde=sabado.toISOString().slice(0,10);
+    const semHasta=viernes.toISOString().slice(0,10);
+
+    const porCob=cobs.map(cob=>{
+      const cliIds=clis.filter(c=>c.cobrador_id===cob.id).map(c=>c.id);
+      const prestCob=prestFilt.filter(p=>cliIds.includes(p.cliente_id));
+      const idsPrest=prestCob.map(p=>p.id);
+      // Cobrado total (excluye gracia, incluye recargos)
+      const cobrado=pagosFilt.filter(p=>idsPrest.includes(p.prestamo_id)&&p.tipo!=='Gracia').reduce((a,p)=>a+p.importe,0);
+      // Cobrado esta semana (sábado-viernes)
+      const cobradoSemana=pagos.filter(p=>idsPrest.includes(p.prestamo_id)&&p.tipo!=='Gracia'&&p.fecha>=semDesde&&p.fecha<=semHasta).reduce((a,p)=>a+p.importe,0);
+      const prestado=prestCob.reduce((a,p)=>a+p.monto,0);
+      return{...cob,prestado,cobrado,cobradoSemana,prestamos:prestCob.length,cliCount:cliIds.length};
+    });
+
+    // Comisiones — 8% sobre cobrado, excluir cobradores sin comisión
+    const sinComision=JSON.parse(localStorage.getItem('sinComision')||'[]');
+    const totalComisiones=porCob.filter(c=>!sinComision.includes(c.id)).reduce((a,c)=>a+c.cobrado*0.08,0);
+    const gananciaBruta=totalCobrado-totalPrestado+totalRecargos;
+    const gananciaNeta=gananciaBruta-totalComisiones;
+
+    // ── Mora ──────────────────────────────────────
+    const hoyStr=hoy;
+    const moraData=[];
+    prest.filter(p=>p.estado==='Activo').forEach(p=>{
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const pasadas=dias.filter(d=>d<hoyStr);
+      if(!pasadas.length)return;
+      const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+      const graciasDia=new Set(pagos.filter(x=>x.prestamo_id===p.id&&x.tipo==='Gracia').map(x=>x.fecha));
+      const pagosDia={};
+      pagosP.forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+      let impagas=0,primeraMora=null;
+      pasadas.forEach(d=>{
+        if(graciasDia.has(d))return;
+        if((pagosDia[d]||0)<p.cuota){impagas++;if(!primeraMora)primeraMora=d;}
+      });
+      if(!impagas)return;
+      const diasMora=Math.floor((new Date(hoyStr)-new Date(primeraMora))/(1000*60*60*24));
+      moraData.push({impagas,deuda:impagas*p.cuota,diasMora,cliente_id:p.cliente_id});
+    });
+
+    const totalEnMora=moraData.reduce((a,m)=>a+m.deuda,0);
+    const cliEnMora=new Set(moraData.map(m=>m.cliente_id)).size;
+    const moraLeve=moraData.filter(m=>m.diasMora<7).length;
+    const moraMod=moraData.filter(m=>m.diasMora>=7&&m.diasMora<14).length;
+    const moraGrave=moraData.filter(m=>m.diasMora>=14).length;
+    const pctMora=prestActivos>0?Math.round((cliEnMora/prestActivos)*100):0;
+    const meses=[];
+    for(let i=5;i>=0;i--){
+      const d=new Date(ahora);d.setMonth(d.getMonth()-i);
+      const mes=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+      const label=d.toLocaleString('es-AR',{month:'short',year:'2-digit'});
+      const prestM=prest.filter(p=>p.fecha_inicio?.startsWith(mes)).reduce((a,p)=>a+p.monto,0);
+      const cobM=pagos.filter(p=>p.tipo!=='Recargo'&&p.tipo!=='Gracia'&&p.fecha?.startsWith(mes)).reduce((a,p)=>a+p.importe,0);
+      meses.push({label,prestM,cobM});
+    }
+
+    const maxBar=Math.max(...meses.map(m=>Math.max(m.prestM,m.cobM)),1);
+
+    document.getElementById('content').innerHTML=`
+    <div class="card">
+      <div class="card-title">📈 Análisis financiero
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          ${['semana','mes','trimestre','todo'].map(p=>`
+          <button class="btn btn-sm ${periodo===p?'btn-p':'btn-s'}" onclick="PAGES.analisis('${p}')">
+            ${p==='semana'?'7 días':p==='mes'?'30 días':p==='trimestre'?'90 días':'Todo'}
+          </button>`).join('')}
+        </div>
+      </div>
+
+      <!-- KPIs principales -->
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px">
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">PRESTÉ</div>
+          <div style="font-weight:800;font-size:18px;color:#0369a1">${fmt(totalPrestado)}</div>
+          <div style="font-size:10px;color:var(--muted)">${prestFilt.length} préstamos</div>
+        </div>
+        <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">TOTAL CON INTERÉS</div>
+          <div style="font-weight:800;font-size:18px;color:#7c3aed">${fmt(totalConInteres)}</div>
+          <div style="font-size:10px;color:var(--muted)">Ganancia esperada: ${fmt(interesEsperado)}</div>
+        </div>
+        <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">COBRADO</div>
+          <div style="font-weight:800;font-size:18px;color:var(--green)">${fmt(totalCobrado)}</div>
+          <div style="font-size:10px;color:var(--muted)">${pagosFilt.length} pagos registrados</div>
+        </div>
+        <div style="background:#fefce8;border:1px solid #fde68a;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">GANANCIA REALIZADA</div>
+          <div style="font-weight:800;font-size:18px;color:#92400e">${fmt(gananciaRealizada)}</div>
+          <div style="font-size:10px;color:var(--muted)">Del cobrado${totalRecargos>0?` + ${fmt(totalRecargos)} recargos`:''}</div>
+        </div>
+        <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:4px">PENDIENTE DE COBRO</div>
+          <div style="font-weight:800;font-size:18px;color:var(--orange)">${fmt(pendiente)}</div>
+          <div style="font-size:10px;color:var(--muted)">${prestActivos} activos · ${prestFinalizados} finalizados</div>
+        </div>
+      </div>
+
+      <!-- Comisiones -->
+      <div style="background:#fdf4ff;border:1px solid #e9d5ff;border-radius:10px;padding:12px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px">COMISIONES A PAGAR (8%)</div>
+          <div style="font-weight:800;font-size:20px;color:#7c3aed">-${fmt(totalComisiones)}</div>
+        </div>
+        <div>
+          <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:2px">GANANCIA NETA</div>
+          <div style="font-weight:800;font-size:24px;color:${(gananciaRealizada-totalComisiones)>=0?'var(--green)':'var(--red)'}">${fmt(gananciaRealizada-totalComisiones)}</div>
+        </div>
+      </div>
+
+      <!-- Mora -->
+      <div style="background:#fff8f8;border:1px solid #fca5a5;border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--red);margin-bottom:10px">⚠ CARTERA EN MORA</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px">
+          <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">TOTAL EN MORA</div>
+            <div style="font-weight:800;font-size:18px;color:var(--red)">${fmt(totalEnMora)}</div>
+          </div>
+          <div style="background:#fff;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">CLIENTES EN MORA</div>
+            <div style="font-weight:800;font-size:18px;color:var(--red)">${cliEnMora}</div>
+            <div style="font-size:10px;color:var(--muted)">${pctMora}% de activos</div>
+          </div>
+          <div style="background:#fefce8;border:1px solid #fde68a;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">🟡 LEVE (1-6 días)</div>
+            <div style="font-weight:800;font-size:18px;color:#ca8a04">${moraLeve}</div>
+          </div>
+          <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">🟠 MODERADA (7-13d)</div>
+            <div style="font-weight:800;font-size:18px;color:var(--orange)">${moraMod}</div>
+          </div>
+          <div style="background:#fff8f8;border:1px solid #fca5a5;border-radius:8px;padding:10px;text-align:center">
+            <div style="font-size:9px;color:var(--muted);font-family:'DM Mono',monospace;margin-bottom:3px">🔴 GRAVE (14+ días)</div>
+            <div style="font-weight:800;font-size:18px;color:var(--red)">${moraGrave}</div>
+          </div>
+        </div>
+        ${totalEnMora>0?`
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px">
+          <div style="flex:1;background:#fee2e2;border-radius:6px;height:10px;overflow:hidden">
+            <div style="background:var(--red);height:100%;width:${Math.min(pctMora,100)}%;border-radius:6px"></div>
+          </div>
+          <span style="color:var(--red);font-weight:600">${pctMora}% de la cartera activa en mora</span>
+        </div>`:'<div style="color:var(--green);font-weight:600;font-size:12px">✓ Sin clientes en mora</div>'}
+      </div>
+
+      <!-- Evolución mensual -->
+      <div style="background:#f8fafc;border-radius:10px;padding:14px;margin-bottom:16px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:12px">EVOLUCIÓN ÚLTIMOS 6 MESES</div>
+        <div style="display:flex;gap:8px;align-items:flex-end;height:100px">
+          ${meses.map(m=>`
+          <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px">
+            <div style="width:100%;display:flex;gap:2px;align-items:flex-end;height:80px">
+              <div style="flex:1;background:#3b82f6;border-radius:3px 3px 0 0;height:${Math.round((m.prestM/maxBar)*80)}px" title="Prestado: ${fmt(m.prestM)}"></div>
+              <div style="flex:1;background:#16a34a;border-radius:3px 3px 0 0;height:${Math.round((m.cobM/maxBar)*80)}px" title="Cobrado: ${fmt(m.cobM)}"></div>
+            </div>
+            <div style="font-size:9px;color:var(--muted)">${m.label}</div>
+          </div>`).join('')}
+        </div>
+        <div style="display:flex;gap:12px;margin-top:8px;font-size:10px">
+          <span><span style="display:inline-block;width:10px;height:10px;background:#3b82f6;border-radius:2px;margin-right:4px"></span>Prestado</span>
+          <span><span style="display:inline-block;width:10px;height:10px;background:#16a34a;border-radius:2px;margin-right:4px"></span>Cobrado</span>
+        </div>
+      </div>
+
+      <!-- Por cobrador -->
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+        <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--muted)">RENDIMIENTO POR COBRADOR</div>
+        <div style="font-size:11px;color:var(--muted)">Semana: ${semDesde} → ${semHasta} &nbsp;
+          <button class="btn btn-p btn-sm" onclick="liquidarSemana()">💸 Liquidar semana</button>
+        </div>
+      </div>
+      <div class="twrap"><table>
+        <thead><tr><th>Cobrador</th><th>Clientes</th><th>Cobrado total</th><th>Esta semana</th><th>Comisión semana</th><th>Sin comisión</th><th></th></tr></thead>
+        <tbody>
+          ${porCob.map(c=>{
+            const sc=sinComision.includes(c.id);
+            const comSem=sc?0:Math.round(c.cobradoSemana*0.08);
+            return`<tr>
+              <td><b>#${c.numero} ${c.nombre}</b><div style="font-size:10px;color:var(--muted)">${c.tel||''}</div></td>
+              <td style="text-align:center">${c.cliCount}</td>
+              <td style="color:var(--green);font-weight:600">${fmt(c.cobrado)}</td>
+              <td style="color:var(--cyan);font-weight:600">${fmt(c.cobradoSemana)}</td>
+              <td style="color:${sc?'var(--muted)':'#7c3aed'};font-weight:${sc?'400':'700'}">${sc?'—':fmt(comSem)}</td>
+              <td style="text-align:center">
+                <input type="checkbox" ${sc?'checked':''} onchange="toggleComision('${c.id}',this.checked)" style="width:16px;height:16px;cursor:pointer"/>
+              </td>
+              <td>
+                ${!sc&&c.cobradoSemana>0?`
+                <button class="btn btn-sm btn-s" onclick="previstaLiquidacion('${c.id}','${c.nombre}','${c.tel||''}',${c.cobradoSemana},'${semDesde}','${semHasta}')">👁 Vista previa</button>
+                <button class="btn btn-sm btn-w" onclick="liquidarCobrador('${c.id}','${c.nombre}','${c.tel||''}',${c.cobradoSemana},'${semDesde}','${semHasta}')">📱 WA</button>
+              `:''}
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+        <tfoot>
+          <tr style="background:#f8fafc">
+            <td colspan="2" style="font-weight:700;padding:8px">TOTALES</td>
+            <td style="font-weight:700;color:var(--green)">${fmt(porCob.reduce((a,c)=>a+c.cobrado,0))}</td>
+            <td style="font-weight:700;color:var(--cyan)">${fmt(porCob.reduce((a,c)=>a+c.cobradoSemana,0))}</td>
+            <td style="font-weight:700;color:#7c3aed">${fmt(porCob.filter(c=>!sinComision.includes(c.id)).reduce((a,c)=>a+Math.round(c.cobradoSemana*0.08),0))}</td>
+            <td colspan="2"></td>
+          </tr>
+        </tfoot>
+      </table></div>
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+async function previstaReporte(cobId){
+  const cob=(await GET('cobradores',`?id=eq.${cobId}`))[0];
+  const hoy=today();
+  const ahora=new Date();
+  const diaSemana=ahora.getDay();
+  const diasDesdeSab=diaSemana===6?0:(diaSemana+1)%7;
+  const sabado=new Date(ahora);sabado.setDate(ahora.getDate()-diasDesdeSab);
+  const viernes=new Date(sabado);viernes.setDate(sabado.getDate()+6);
+  const semDesde=sabado.toISOString().slice(0,10);
+  const semHasta=viernes.toISOString().slice(0,10);
+
+  const clis=await GET('clientes',`?cobrador_id=eq.${cobId}`);
+  const prest=await GET('prestamos','?estado=eq.Activo');
+  const pagos=await GET('pagos',`?fecha=gte.${semDesde}&fecha=lte.${semHasta}`);
+
+  const misIds=prest.filter(p=>clis.find(c=>c.id===p.cliente_id)).map(p=>p.id);
+  const pagosSemana=pagos.filter(p=>misIds.includes(p.prestamo_id)&&p.tipo!=='Gracia');
+  const total=pagosSemana.reduce((a,p)=>a+p.importe,0);
+  const comision=Math.round(total*0.08);
+
+  const detalle=[];
+  clis.forEach(cli=>{
+    const prestCli=prest.filter(x=>x.cliente_id===cli.id&&x.estado==='Activo');
+    prestCli.forEach(p=>{
+      const pagosCli=pagosSemana.filter(x=>x.prestamo_id===p.id);
+      if(!pagosCli.length)return;
+      const cobradoCli=pagosCli.reduce((a,x)=>a+x.importe,0);
+      const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+      const nr=dias.filter(d=>d<=hoy).length;
+      detalle.push({nombre:cli.nombre,nr,cuotas:p.cuotas,cuota:p.cuota,cobrado:cobradoCli});
+    });
+  });
+
+  // Construir vista previa del mensaje
+  let msg=`*CREDIDEY — Reporte semanal*\n`;
+  msg+=`Cobrador: *${cob.nombre}*\n`;
+  msg+=`Semana: ${fmtD(semDesde)} al ${fmtD(semHasta)}\n\n`;
+  if(detalle.length){
+    msg+=`*Clientes:*\n`;
+    detalle.forEach(d=>{
+      const dif=d.cobrado-d.cuota;
+      const extra=dif>0?` (+${fmt(dif)})`:'';
+      const parcial=dif<0?` (parcial, falta ${fmt(Math.abs(dif))})`:'';
+      msg+=`• ${d.nombre} — Cuota #${d.nr}/${d.cuotas} — ${fmt(d.cobrado)}${extra}${parcial}\n`;
+    });
+  } else {
+    msg+=`Sin cobros registrados esta semana.\n`;
+  }
+  msg+=`\n*Recaudado semana: ${fmt(total)}*\n`;
+  msg+=`*Tu comisión (8%): ${fmt(comision)}*\n`;
+  msg+=`\n_CrediDey_`;
+
+  openM(`👁 Vista previa — ${cob.nombre}`,`
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+      Así va a ver el mensaje ${cob.nombre} en WhatsApp:
+    </div>
+    <div style="background:#dcfce7;border-radius:12px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;font-family:'DM Sans',sans-serif;border:1px solid #86efac">${msg.replace(/\*/g,'<b>').replace(/\*/g,'</b>').replace(/_/g,'<i>').replace(/_/g,'</i>')}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-w" onclick="closeM();reporteWA('${cobId}')">📱 Enviar por WhatsApp</button>
+      <button class="btn btn-s" onclick="closeM()">Cerrar</button>
+    </div>
+  `);
+}
+
+function previstaLiquidacion(cobId,cobNombre,cobTel,cobradoSemana,desde,hasta){
+  const com=Math.round(cobradoSemana*0.08);
+  const desdeLeg=desde.split('-').reverse().join('/');
+  const hastaLeg=hasta.split('-').reverse().join('/');
+  const msg=`*CREDIDEY — Liquidación semanal*\n\nCobrador: *${cobNombre}*\nPeríodo: ${desdeLeg} al ${hastaLeg}\n\n💰 Total recaudado: *${fmt(cobradoSemana)}*\n📊 Comisión (8%): *${fmt(com)}*\n\n_Gracias por tu trabajo esta semana!_\n_CrediDey_`;
+
+  openM(`👁 Vista previa — Liquidación ${cobNombre}`,`
+    <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--muted)">
+      Así va a ver el mensaje ${cobNombre} en WhatsApp:
+    </div>
+    <div style="background:#dcfce7;border-radius:12px;padding:14px;font-size:13px;line-height:1.7;white-space:pre-wrap;font-family:'DM Sans',sans-serif;border:1px solid #86efac">${msg}</div>
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <button class="btn btn-w" onclick="closeM();liquidarCobrador('${cobId}','${cobNombre}','${cobTel}',${cobradoSemana},'${desde}','${hasta}')">📱 Enviar por WhatsApp</button>
+      <button class="btn btn-s" onclick="closeM()">Cerrar</button>
+    </div>
+  `);
+}
+
+async function liquidarSemana(){
+  const cobs=await GET('cobradores','?order=numero.asc');
+  const clis=await GET('clientes','?select=id,cobrador_id');
+  const prest=await GET('prestamos','?select=id,cliente_id');
+  const ahora=new Date();
+  const diaSemana=ahora.getDay();
+  const diasDesdeSab=diaSemana===6?0:(diaSemana+1)%7;
+  const sabado=new Date(ahora);sabado.setDate(ahora.getDate()-diasDesdeSab);
+  const viernes=new Date(sabado);viernes.setDate(sabado.getDate()+6);
+  const semDesde=sabado.toISOString().slice(0,10);
+  const semHasta=viernes.toISOString().slice(0,10);
+  const pagos=await GET('pagos',`?fecha=gte.${semDesde}&fecha=lte.${semHasta}&select=prestamo_id,importe,tipo`);
+  const sinComision=JSON.parse(localStorage.getItem('sinComision')||'[]');
+
+  const conCobro=cobs.filter(cob=>{
+    if(sinComision.includes(cob.id))return false;
+    const cliIds=clis.filter(c=>c.cobrador_id===cob.id).map(c=>c.id);
+    const prestIds=prest.filter(p=>cliIds.includes(p.cliente_id)).map(p=>p.id);
+    const cobrado=pagos.filter(p=>prestIds.includes(p.prestamo_id)&&p.tipo!=='Gracia').reduce((a,p)=>a+p.importe,0);
+    cob._cobradoSem=cobrado;
+    return cobrado>0;
+  });
+
+  if(!conCobro.length){alert('Ningún cobrador recaudó esta semana.');return;}
+  if(!confirm(`¿Enviar liquidación a ${conCobro.length} cobrador${conCobro.length>1?'es':{}}?`))return;
+
+  for(const cob of conCobro){
+    liquidarCobrador(cob.id,cob.nombre,cob.tel,cob._cobradoSem,semDesde,semHasta);
+    await new Promise(r=>setTimeout(r,800));
+  }
+}
+
+function toggleComision(cobId,sinCom){
+  const sc=JSON.parse(localStorage.getItem('sinComision')||'[]');
+  const nuevo=sinCom?[...new Set([...sc,cobId])]:sc.filter(x=>x!==cobId);
+  localStorage.setItem('sinComision',JSON.stringify(nuevo));
+  PAGES.analisis(document.querySelector('.nb.on')?.textContent?.includes('Análisis')?'mes':'mes');
+}
+// ══════════════════════════════════════════════
+PAGES.archivo=async function(){
+  try{
+    const[prest,clis,cobs,pagos]=await Promise.all([
+      GET('prestamos','?estado=eq.Finalizado&order=created_at.desc'),
+      GET('clientes','?order=nombre.asc'),
+      GET('cobradores','?select=id,numero,nombre'),
+      GET('pagos','?select=prestamo_id,importe,tipo'),
+    ]);
+
+    // Agrupar por cliente
+    const porCliente={};
+    prest.forEach(p=>{
+      if(!porCliente[p.cliente_id])porCliente[p.cliente_id]=[];
+      porCliente[p.cliente_id].push(p);
+    });
+
+    const clientesConHistorial=clis.filter(c=>porCliente[c.id]);
+
+    document.getElementById('content').innerHTML=`
+    <div class="card">
+      <div class="card-title">📁 Archivo — Historial de clientes (${clientesConHistorial.length})</div>
+      ${clientesConHistorial.length?`
+      <div class="twrap"><table>
+        <thead><tr><th>Cliente</th><th>Créditos</th><th>Cobrador</th><th>Último crédito</th><th>Total prestado</th><th>Comportamiento</th><th></th></tr></thead>
+        <tbody>
+          ${clientesConHistorial.map(c=>{
+            const cob=cobs.find(x=>x.id===c.cobrador_id);
+            const prestC=porCliente[c.id];
+            const totalPrestado=prestC.reduce((a,p)=>a+p.monto,0);
+            const ultimo=prestC[0];
+            // Calcular comportamiento: % de cuotas pagadas a tiempo
+            let pagasTotal=0,impagasTotal=0;
+            prestC.forEach(p=>{
+              const pagosP=pagos.filter(x=>x.prestamo_id===p.id&&x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+              const pagosDia={};
+              pagosP.forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+              const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+              dias.forEach(d=>{
+                const pago=pagosDia[d]||0;
+                if(pago>=(p.cuota||0))pagasTotal++;
+                else impagasTotal++;
+              });
+            });
+            const total=pagasTotal+impagasTotal;
+            const pct=total>0?Math.round((pagasTotal/total)*100):100;
+            const compColor=pct>=90?'var(--green)':pct>=70?'var(--yellow)':'var(--red)';
+            const compLabel=pct>=90?'Excelente':pct>=70?'Regular':'Con atrasos';
+            return`<tr>
+              <td><b>${c.nombre}</b><div style="font-size:11px;color:var(--muted)">${c.tel||'—'}</div></td>
+              <td style="text-align:center;font-weight:700;color:var(--accent)">${prestC.length}</td>
+              <td>${cob?`#${cob.numero} ${cob.nombre}`:'—'}</td>
+              <td class="mono" style="font-size:11px">${fmtD(ultimo.fecha_inicio)} · ${ultimo.plan} días</td>
+              <td style="font-weight:700">${fmt(totalPrestado)}</td>
+              <td><span style="background:${compColor}22;color:${compColor};border:1px solid ${compColor}44;border-radius:6px;padding:3px 8px;font-size:11px;font-weight:600">${pct}% — ${compLabel}</span></td>
+              <td style="white-space:nowrap">
+                <button class="btn btn-sm btn-s" onclick="verHistorial('${c.id}')">Ver</button>
+                <button class="btn btn-sm btn-p" onclick="reactivarCliente('${c.id}')">+ Nuevo crédito</button>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table></div>`:'<div class="empty">No hay clientes con créditos finalizados.</div>'}
+    </div>`;
+  }catch(e){document.getElementById('content').innerHTML=`<div class="alert-b">Error: ${e.message}</div>`;}
+};
+
+async function verHistorial(cliId){
+  const[c,prest]=await Promise.all([
+    GET('clientes',`?id=eq.${cliId}`).then(r=>r[0]),
+    GET('prestamos',`?cliente_id=eq.${cliId}&estado=eq.Finalizado&order=created_at.desc`)
+  ]);
+  let html=`<div style="margin-bottom:12px"><div style="font-size:16px;font-weight:700">${c.nombre}</div><div style="font-size:12px;color:var(--muted)">📞 ${c.tel||'—'}</div></div>`;
+  for(const p of prest){
+    const pagosP=await GET('pagos',`?prestamo_id=eq.${p.id}&order=fecha.asc`);
+    const pagosReales=pagosP.filter(x=>x.tipo!=='Recargo'&&x.tipo!=='Gracia');
+    const gracias=pagosP.filter(x=>x.tipo==='Gracia').length;
+    const abonado=pagosReales.reduce((a,x)=>a+x.importe,0);
+    const dias=diasHabiles(p.fecha_inicio,p.cuotas);
+    const pagosDia={};
+    pagosReales.forEach(pg=>{pagosDia[pg.fecha]=(pagosDia[pg.fecha]||0)+pg.importe;});
+    let pagas=0,impagas=0;
+    dias.forEach(d=>{const pg=pagosDia[d]||0;if(pg>=p.cuota)pagas++;else impagas++;});
+    html+=`
+    <div style="background:#f8fafc;border-radius:10px;padding:12px;margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:4px">
+        <div style="font-size:12px;color:var(--muted)">${p.plan} días · inicio ${fmtD(p.fecha_inicio)}</div>
+        <span style="background:#64748b22;color:#64748b;border:1px solid #64748b44;border-radius:6px;padding:2px 8px;font-size:11px">Finalizado</span>
+      </div>
+      <div class="g4" style="gap:8px">
+        <div><div style="font-size:9px;color:var(--muted)">PRESTADO</div><b>${fmt(p.monto)}</b></div>
+        <div><div style="font-size:9px;color:var(--muted)">TOTAL</div><b style="color:#7c3aed">${fmt(p.total)}</b></div>
+        <div><div style="font-size:9px;color:var(--muted)">PAGAS</div><b style="color:var(--green)">${pagas} / ${p.cuotas}</b></div>
+        <div><div style="font-size:9px;color:var(--muted)">IMPAGAS</div><b style="color:${impagas>0?'var(--red)':'var(--muted)'}">${impagas}</b></div>
+      </div>
+      ${gracias>0?`<div style="font-size:11px;color:var(--muted);margin-top:6px">🕊 ${gracias} día${gracias>1?'s':''} de gracia usados</div>`:''}
+    </div>`;
+  }
+  html+=`<button class="btn btn-p" onclick="closeM();reactivarCliente('${cliId}')">+ Nuevo crédito</button>`;
+  openM(`Historial — ${c.nombre}`,html);
+}
+
+async function reactivarCliente(cliId){
+  closeM();
+  await modalNuevoPrest(cliId);
+}
+
+// ══════════════════════════════════════════════
+// CONTRATO
+// ══════════════════════════════════════════════
+PAGES.contrato=async function(){
+  const cobs=await GET('cobradores','?order=numero.asc');
+  document.getElementById('content').innerHTML=`
+  <div class="card">
+    <div class="card-title">📄 Contrato de adhesión — CrediDey
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn btn-p btn-sm" onclick="imprimirContrato()">🖨 Imprimir / PDF</button>
+        <select id="cont-cob" style="max-width:220px;font-size:12px">
+          <option value="">Enviar a cobrador por WA...</option>
+          ${cobs.map(c=>`<option value="${c.tel||''}" data-nom="${c.nombre}">#${c.numero} ${c.nombre}</option>`).join('')}
+        </select>
+        <button class="btn btn-w btn-sm" onclick="enviarContrato()">📱 WhatsApp</button>
+      </div>
+    </div>
+    <div style="background:#fff;border:1px solid var(--border);border-radius:10px;padding:20px;font-family:'DM Sans',sans-serif;line-height:1.7;max-width:700px;margin:0 auto">
+      <div style="text-align:center;margin-bottom:20px">
+        <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:22px">CREDIDEY</div>
+        <div style="font-weight:700;font-size:14px;letter-spacing:.05em">COMPROMISO DE PAGO Y ADHESIÓN</div>
+      </div>
+      <p style="margin-bottom:12px">En la ciudad de __________________, a los _____ días del mes de __________________ de ______, quien suscribe:</p>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:12px">
+        <div><b>Nombre y Apellido:</b> ______________________________________________</div>
+        <div><b>DNI:</b> _______________________ <b>Teléfono:</b> _______________________</div>
+        <div><b>Domicilio:</b> _____________________________________________________</div>
+        <div><b>Nombre del Comercio/Emprendimiento:</b> ______________________________</div>
+        <div><b>Dirección del Comercio:</b> _________________________________________</div>
+      </div>
+      <p style="margin-bottom:8px"><b>MANIFIESTA:</b> Que ha solicitado y recibido de CREDIDEY un préstamo por la suma de $____________________, comprometiéndose a reintegrarlo bajo las siguientes condiciones:</p>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:12px">
+        <div><b>Monto del préstamo:</b> $____________________</div>
+        <div><b>Cantidad de cuotas:</b> ____________________</div>
+        <div><b>Valor de cada cuota:</b> $__________________</div>
+        <div><b>Fecha de inicio de pago:</b> ____ / ____ / ______</div>
+      </div>
+      <p style="font-weight:700;margin-bottom:8px">DECLARACIONES Y COMPROMISOS</p>
+      <ol style="padding-left:18px;margin-bottom:12px">
+        <li style="margin-bottom:4px">Declaro haber recibido el préstamo mencionado precedentemente.</li>
+        <li style="margin-bottom:4px">Me comprometo a abonar las cuotas pactadas en tiempo y forma, respetando las fechas y horarios establecidos por CREDIDEY.</li>
+        <li style="margin-bottom:4px">Reconozco que el incumplimiento de los pagos podrá generar recargos e intereses previamente informados.</li>
+        <li style="margin-bottom:4px">Mantendré actualizados mis datos personales, domicilio y teléfono de contacto.</li>
+        <li style="margin-bottom:4px">Autorizo a CREDIDEY a realizar comunicaciones y gestiones de cobranza dentro de la normativa vigente.</li>
+        <li style="margin-bottom:4px">Declaro que los datos consignados son verdaderos.</li>
+        <li style="margin-bottom:4px">Manifiesto haber leído, comprendido y aceptado voluntariamente todas las condiciones aquí establecidas.</li>
+      </ol>
+      <div style="background:#f8fafc;border-radius:8px;padding:12px;margin-bottom:16px">
+        <b>Documentación adjunta:</b> ■ Copia de DNI &nbsp; ■ Factura de servicio &nbsp; ■ Foto del comercio
+      </div>
+      <div class="g2" style="gap:16px">
+        <div>
+          <div>Firma del Cliente: ______________________________</div>
+          <div>Aclaración: _____________________________________</div>
+          <div>DNI: ___________________________________________</div>
+        </div>
+        <div>
+          <div>Firma por CREDIDEY: ____________________________</div>
+          <div>Aclaración: _____________________________________</div>
+          <div>Fecha: ____ / ____ / ______</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+};
+
+function enviarContrato(){
+  const sel=document.getElementById('cont-cob');
+  const tel=(sel.value||'').replace(/\D/g,'');
+  const nom=sel.options[sel.selectedIndex]?.dataset?.nom||'';
+  const msg=`*CREDIDEY — Contrato de Adhesión*\n\nHola${nom?' '+nom:''}! Te envío el contrato de adhesión para completar con el cliente:\n\n*COMPROMISO DE PAGO Y ADHESIÓN*\n\nNombre y Apellido: ___________________\nDNI: _______________ Tel: ____________\nDomicilio: __________________________\nComercio: ___________________________\n\nMonto: $_____________\nCuotas: _____________\nValor cuota: $_______\nInicio: ____/____/______\n\nCOMPROMISOS:\n1. Declaro haber recibido el préstamo.\n2. Me comprometo a abonar las cuotas en tiempo y forma.\n3. El incumplimiento podrá generar recargos.\n4. Mantendré actualizados mis datos.\n5. Autorizo gestiones de cobranza.\n6. Los datos son verdaderos.\n7. Acepto todas las condiciones.\n\nDoc adjunta: DNI ■ Factura servicio ■ Foto comercio\n\nFirma cliente: _________________\nFirma CrediDey: ________________\nFecha: ____/____/______\n\n_CrediDey_`;
+  window.open(tel?`https://wa.me/54${tel}?text=${encodeURIComponent(msg)}`:`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+}
+
+// ══════════════════════════════════════════════
+// BACKUP / EXPORTAR A EXCEL
+// ══════════════════════════════════════════════
+async function exportarExcel(){
+  try{
+    const[clis,prest,pagos,cobs]=await Promise.all([
+      GET('clientes','?order=nombre.asc'),
+      GET('prestamos','?order=created_at.asc'),
+      GET('pagos','?order=fecha.asc'),
+      GET('cobradores','?order=numero.asc'),
+    ]);
+
+    // Construir CSV de clientes
+    let csv='CLIENTES\n';
+    csv+='Nombre,DNI,Teléfono,Dirección,Localidad,Cobrador\n';
+    clis.forEach(c=>{
+      const cob=cobs.find(x=>x.id===c.cobrador_id);
+      csv+=`"${c.nombre||''}","${c.dni||''}","${c.tel||''}","${c.dir||''}","${c.loc||''}","${cob?'#'+cob.numero+' '+cob.nombre:''}"\n`;
+    });
+
+    csv+='\nPRÉSTAMOS\n';
+    csv+='Cliente,Monto,Total,Cuota,Plan,Inicio,Estado\n';
+    prest.forEach(p=>{
+      const c=clis.find(x=>x.id===p.cliente_id);
+      csv+=`"${c?.nombre||''}","${p.monto}","${p.total}","${p.cuota}","${p.plan} días","${p.fecha_inicio}","${p.estado}"\n`;
+    });
+
+    csv+='\nPAGOS\n';
+    csv+='Cliente,Fecha,Importe,Tipo,Nota\n';
+    pagos.forEach(pg=>{
+      const pr=prest.find(x=>x.id===pg.prestamo_id);
+      const c=clis.find(x=>x.id===pr?.cliente_id);
+      csv+=`"${c?.nombre||''}","${pg.fecha}","${pg.importe}","${pg.tipo||'Normal'}","${pg.nota||''}"\n`;
+    });
+
+    // Descargar
+    const blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    const fecha=new Date().toISOString().slice(0,10);
+    a.href=url;a.download=`credidey-backup-${fecha}.csv`;
+    document.body.appendChild(a);a.click();document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    // Guardar fecha del último backup
+    localStorage.setItem('ultimoBackup',new Date().toISOString());
+    alert(`✓ Backup guardado: credidey-backup-${fecha}.csv\nGuardalo en Google Drive o en un lugar seguro.`);
+  }catch(e){alert('Error al exportar: '+e.message);}
+}
+
+function verificarBackup(){
+  const ultimo=localStorage.getItem('ultimoBackup');
+  if(!ultimo){
+    mostrarBannerBackup('Nunca hiciste un backup. ¡Guardá una copia de tus datos!');
+    return;
+  }
+  const dias=Math.floor((new Date()-new Date(ultimo))/(1000*60*60*24));
+  if(dias>=7)mostrarBannerBackup(`Último backup hace ${dias} días. ¡Recomendamos hacerlo semanalmente!`);
+}
+
+function mostrarBannerBackup(msg){
+  const banner=document.createElement('div');
+  banner.id='backup-banner';
+  banner.style.cssText='position:fixed;bottom:16px;right:16px;background:#1e293b;color:#fff;border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:12px;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.3);max-width:320px;font-size:12px';
+  banner.innerHTML=`
+    <div>⚠ <b>Backup</b><br>${msg}</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <button onclick="exportarExcel();document.getElementById('backup-banner').remove()" style="background:#16a34a;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px;white-space:nowrap">📥 Exportar ahora</button>
+      <button onclick="document.getElementById('backup-banner').remove()" style="background:#475569;color:#fff;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:11px">Más tarde</button>
+    </div>`;
+  document.body.appendChild(banner);
+}
+
+// INIT
+PAGES.dashboard();
+setTimeout(()=>{
+  const s=document.getElementById('splash');
+  if(s){s.style.transition='opacity .5s';s.style.opacity='0';setTimeout(()=>s.remove(),500);}
+  verificarBackup();
+},1200);
+</script>
+</body>
+</html>
